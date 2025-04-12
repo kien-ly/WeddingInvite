@@ -10,11 +10,11 @@ export default function CoupleSection() {
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <h2 className="font-['Playfair_Display'] text-4xl md:text-5xl text-neutral-800 mb-4">
-            Our Love Story
+            Câu Chuyện Tình Yêu
           </h2>
           <div className="w-16 h-0.5 bg-primary mx-auto mb-6"></div>
           <p className="max-w-2xl mx-auto text-neutral-700">
-            We are so excited to celebrate our special day with you. Our journey together has been amazing, and we can't wait to begin the next chapter of our lives.
+            Chúng tôi rất vui mừng được đón chào bạn trong ngày trọng đại này. Hành trình của chúng tôi đã trải qua nhiều kỷ niệm tuyệt vời, và giờ đây chúng tôi háo hức bắt đầu chương mới của cuộc đời.
           </p>
         </div>
         
@@ -24,7 +24,7 @@ export default function CoupleSection() {
             <div className="mb-6 w-64 h-64 rounded-full overflow-hidden mx-auto border-4 border-primary shadow-lg">
               <img 
                 src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=400&q=80" 
-                alt="Bride" 
+                alt="Cô dâu" 
                 className="w-full h-full object-cover"
               />
             </div>
@@ -51,7 +51,7 @@ export default function CoupleSection() {
             <div className="mb-6 w-64 h-64 rounded-full overflow-hidden mx-auto border-4 border-primary shadow-lg">
               <img 
                 src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=400&q=80" 
-                alt="Groom" 
+                alt="Chú rể" 
                 className="w-full h-full object-cover"
               />
             </div>
@@ -74,7 +74,7 @@ export default function CoupleSection() {
         
         <div className="mt-20 max-w-3xl mx-auto text-center">
           <h3 className="font-['Playfair_Display'] text-2xl text-neutral-800 mb-6">
-            How We Met
+            Chúng Tôi Đã Gặp Nhau
           </h3>
           <p className="text-neutral-700 mb-6">
             {WEDDING_INFO.story.meetingStory}

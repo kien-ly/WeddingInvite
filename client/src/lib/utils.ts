@@ -10,7 +10,7 @@ export function formatDate(date: Date | string | undefined): string {
   
   const d = typeof date === "string" ? new Date(date) : date;
   
-  return new Intl.DateTimeFormat("en-US", {
+  return new Intl.DateTimeFormat("vi-VN", {
     year: "numeric",
     month: "long",
     day: "numeric",
@@ -23,27 +23,45 @@ export const WEDDING_DATE = new Date("2023-08-15T10:00:00");
 // Event details
 export const WEDDING_INFO = {
   couple: {
-    brideFirstName: "Ngoc",
-    groomFirstName: "Son",
-    fullNames: "Ngoc & Son",
-    brideDescription: "A creative soul with a passion for art and design. She loves traveling and exploring new cultures.",
-    groomDescription: "A dedicated professional with a love for music and technology. He enjoys outdoor activities and good conversations."
+    brideFirstName: "Ngọc",
+    groomFirstName: "Sơn",
+    fullNames: "Ngọc & Sơn",
+    brideDescription: "Cô dâu xinh đẹp với niềm đam mê nghệ thuật và thiết kế. Cô ấy yêu thích du lịch và khám phá các nền văn hóa mới.",
+    groomDescription: "Chú rể tài năng với tình yêu âm nhạc và công nghệ. Anh ấy thích các hoạt động ngoài trời và những cuộc trò chuyện thú vị."
   },
   event: {
-    date: "August 15, 2023",
-    venue: "Golden Palace, Hanoi",
-    ceremony: {
-      time: "10:00 AM",
-      location: "Golden Palace, 18 Tran Duy Hung, Hanoi"
-    },
-    reception: {
-      time: "6:00 PM",
-      location: "Golden Palace, 18 Tran Duy Hung, Hanoi"
-    }
+    date: "15 tháng 8, 2023",
+    venue: "Cung Điện Vàng, Hà Nội",
+    events: [
+      {
+        title: "Lễ Đón Dâu",
+        time: "08:00",
+        location: "Nhà Gái, 25 Trần Hưng Đạo, Hà Nội",
+        description: "Lễ đón dâu tại nhà gái, nơi chú rể và đoàn nhà trai đến đón cô dâu."
+      },
+      {
+        title: "Lễ Vu Quy",
+        time: "09:30",
+        location: "Nhà Trai, 56 Lê Lợi, Hà Nội",
+        description: "Lễ vu quy tại nhà trai, nghi thức đón cô dâu về nhà chồng."
+      },
+      {
+        title: "Lễ Thành Hôn",
+        time: "10:30",
+        location: "Cung Điện Vàng, 18 Trần Duy Hưng, Hà Nội",
+        description: "Lễ cưới chính thức với sự hiện diện của hai họ và quan khách."
+      },
+      {
+        title: "Tiệc Cưới",
+        time: "18:00",
+        location: "Cung Điện Vàng, 18 Trần Duy Hưng, Hà Nội",
+        description: "Tiệc mừng chung vui cùng gia đình, bạn bè và khách mời."
+      }
+    ]
   },
   story: {
-    meetingStory: "Our paths crossed at a mutual friend's birthday party in the summer of 2018. What started as a casual conversation about our shared love for travel turned into a deep connection that has only grown stronger over time.",
-    proposalStory: "After three years of adventures together, Son proposed during a sunset picnic at our favorite lakeside spot. And of course, Ngoc said yes!"
+    meetingStory: "Chúng tôi gặp nhau lần đầu tại một buổi tiệc sinh nhật của người bạn chung vào mùa hè năm 2018. Cuộc trò chuyện về niềm đam mê du lịch đã kết nối hai chúng tôi và mối quan hệ đó đã ngày càng sâu đậm hơn theo thời gian.",
+    proposalStory: "Sau ba năm đồng hành cùng nhau, Sơn đã cầu hôn Ngọc trong một buổi dã ngoại hoàng hôn tại hồ Tây - nơi yêu thích của cả hai. Và tất nhiên, Ngọc đã nói Đồng Ý!"
   }
 };
 

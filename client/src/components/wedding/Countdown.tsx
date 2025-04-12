@@ -60,10 +60,10 @@ export default function Countdown() {
 
   // Array of countdown units for mapping
   const countdownUnits = [
-    { value: timeLeft.days, label: "Days" },
-    { value: timeLeft.hours, label: "Hours" },
-    { value: timeLeft.minutes, label: "Minutes" },
-    { value: timeLeft.seconds, label: "Seconds" },
+    { value: timeLeft.days, label: "Ngày" },
+    { value: timeLeft.hours, label: "Giờ" },
+    { value: timeLeft.minutes, label: "Phút" },
+    { value: timeLeft.seconds, label: "Giây" },
   ];
 
   return (
@@ -71,7 +71,7 @@ export default function Countdown() {
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="font-['Dancing_Script'] text-3xl md:text-4xl text-primary mb-4">
-            Counting down to our special day
+            Đếm ngược đến ngày cưới
           </h2>
           <div className="w-16 h-0.5 bg-primary mx-auto"></div>
         </div>

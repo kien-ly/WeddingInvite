@@ -7,11 +7,11 @@ export default function Gallery() {
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <h2 className="font-['Playfair_Display'] text-4xl md:text-5xl text-neutral-800 mb-4">
-            Our Moments
+            Khoảnh Khắc Của Chúng Tôi
           </h2>
           <div className="w-16 h-0.5 bg-primary mx-auto mb-6"></div>
           <p className="max-w-2xl mx-auto text-neutral-700">
-            A glimpse into our journey and the beautiful memories we've created together.
+            Hành trình tình yêu và những kỷ niệm đẹp mà chúng tôi đã tạo nên cùng nhau.
           </p>
         </div>
         

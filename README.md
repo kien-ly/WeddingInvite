@@ -10,6 +10,77 @@ This is a wedding invitation website with RSVP and wishes functionality, inspire
 - Wishes section for guests to leave congratulatory messages
 - Admin dashboard to view RSVPs and wishes
 - Fully responsive design for mobile, tablet, and desktop
+- PostgreSQL database integration for data storage
+
+## Local Setup and Development
+
+### Prerequisites
+
+- Node.js (version 16 or higher)
+- npm or yarn
+- PostgreSQL (version 12 or higher)
+
+### Step 1: Clone the Repository
+
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/wedding-website.git
+
+# Navigate to the project directory
+cd wedding-website
+```
+
+### Step 2: Install Dependencies
+
+```bash
+# Install all required dependencies
+npm install
+```
+
+### Step 3: Setup PostgreSQL Database
+
+First, ensure that PostgreSQL is running on your machine. Then create a new database:
+
+```bash
+# Connect to PostgreSQL
+psql -U postgres
+
+# Create a database
+CREATE DATABASE wedding;
+
+# Create a user (if needed)
+CREATE USER weddinguser WITH PASSWORD 'your-password';
+
+# Grant privileges
+GRANT ALL PRIVILEGES ON DATABASE wedding TO weddinguser;
+
+# Exit PostgreSQL
+\q
+```
+
+### Step 4: Configure Environment Variables
+
+Create a `.env` file in the root directory:
+
+```
+DATABASE_URL=postgres://weddinguser:your-password@localhost:5432/wedding
+```
+
+### Step 5: Push Database Schema
+
+```bash
+# Push the schema to the database
+npm run db:push
+```
+
+### Step 6: Run Development Server
+
+```bash
+# Start the development server
+npm run dev
+```
+
+The application should now be running at http://localhost:5000
 
 ## Setup on EC2
 

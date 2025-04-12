@@ -3,6 +3,8 @@ import {
   rsvps, type Rsvp, type InsertRsvp,
   wishes, type Wish, type InsertWish
 } from "@shared/schema";
+import { db } from "./db";
+import { eq, desc } from "drizzle-orm";
 
 export interface IStorage {
   // User methods
@@ -21,87 +23,75 @@ export interface IStorage {
   createWish(wish: InsertWish): Promise<Wish>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<number, User>;
-  private rsvps: Map<number, Rsvp>;
-  private wishes: Map<number, Wish>;
-  
-  private userId: number;
-  private rsvpId: number;
-  private wishId: number;
-
-  constructor() {
-    this.users = new Map();
-    this.rsvps = new Map();
-    this.wishes = new Map();
-    
-    this.userId = 1;
-    this.rsvpId = 1;
-    this.wishId = 1;
-    
-    // Create default admin user
-    this.createUser({
-      username: "admin",
-      password: "weddingadmin2023"
-    });
-  }
-
+export class DatabaseStorage implements IStorage {
   // User methods
   async getUser(id: number): Promise<User | undefined> {
-    return this.users.get(id);
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user || undefined;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const id = this.userId++;
-    const createdAt = new Date();
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
+    const [user] = await db.insert(users).values(insertUser).returning();
     return user;
   }
 
   // RSVP methods
   async getAllRsvps(): Promise<Rsvp[]> {
-    return Array.from(this.rsvps.values()).sort((a, b) => {
-      return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
-    });
+    return await db.select().from(rsvps).orderBy(desc(rsvps.createdAt));
   }
 
   async getRsvp(id: number): Promise<Rsvp | undefined> {
-    return this.rsvps.get(id);
+    const [rsvp] = await db.select().from(rsvps).where(eq(rsvps.id, id));
+    return rsvp || undefined;
   }
 
   async createRsvp(insertRsvp: InsertRsvp): Promise<Rsvp> {
-    const id = this.rsvpId++;
-    const createdAt = new Date();
-    const rsvp: Rsvp = { ...insertRsvp, id, createdAt };
-    this.rsvps.set(id, rsvp);
+    const [rsvp] = await db.insert(rsvps).values({
+      ...insertRsvp,
+      createdAt: new Date()
+    }).returning();
     return rsvp;
   }
 
   // Wish methods
   async getAllWishes(): Promise<Wish[]> {
-    return Array.from(this.wishes.values()).sort((a, b) => {
-      return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
-    });
+    return await db.select().from(wishes).orderBy(desc(wishes.createdAt));
   }
 
   async getWish(id: number): Promise<Wish | undefined> {
-    return this.wishes.get(id);
+    const [wish] = await db.select().from(wishes).where(eq(wishes.id, id));
+    return wish || undefined;
   }
 
   async createWish(insertWish: InsertWish): Promise<Wish> {
-    const id = this.wishId++;
-    const createdAt = new Date();
-    const wish: Wish = { ...insertWish, id, createdAt };
-    this.wishes.set(id, wish);
+    const [wish] = await db.insert(wishes).values({
+      ...insertWish,
+      createdAt: new Date()
+    }).returning();
     return wish;
   }
 }
 
-export const storage = new MemStorage();
+// Initialize the admin user if none exists
+const initAdminUser = async () => {
+  const storage = new DatabaseStorage();
+  const adminUser = await storage.getUserByUsername("admin");
+  
+  if (!adminUser) {
+    await storage.createUser({
+      username: "admin",
+      password: "weddingadmin2023"
+    });
+    console.log("Admin user created successfully");
+  }
+};
+
+// Initialize the database
+initAdminUser().catch(err => console.error("Failed to initialize admin user:", err));
+
+export const storage = new DatabaseStorage();

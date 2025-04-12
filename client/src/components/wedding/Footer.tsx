@@ -30,19 +30,19 @@ export default function Footer({ onNavigate }: FooterProps) {
         
         <div className="flex flex-col md:flex-row justify-center items-center space-y-6 md:space-y-0 md:space-x-12 mb-10">
           <button onClick={onNavigate.toCouple} className="text-neutral-300 hover:text-primary transition-colors">
-            Our Story
+            Câu Chuyện
           </button>
           <button onClick={onNavigate.toEvents} className="text-neutral-300 hover:text-primary transition-colors">
-            Events
+            Sự Kiện
           </button>
           <button onClick={onNavigate.toGallery} className="text-neutral-300 hover:text-primary transition-colors">
-            Gallery
+            Hình Ảnh
           </button>
           <button onClick={onNavigate.toRsvp} className="text-neutral-300 hover:text-primary transition-colors">
-            RSVP
+            Xác Nhận
           </button>
           <button onClick={onNavigate.toWishes} className="text-neutral-300 hover:text-primary transition-colors">
-            Wishes
+            Lời Chúc
           </button>
         </div>
         
@@ -59,9 +59,9 @@ export default function Footer({ onNavigate }: FooterProps) {
         </div>
         
         <div className="text-center text-sm text-neutral-400 opacity-70">
-          <p>&copy; 2023 {WEDDING_INFO.couple.fullNames} Wedding. All rights reserved.</p>
+          <p>&copy; 2023 Lễ Cưới {WEDDING_INFO.couple.fullNames}. Đã đăng ký bản quyền.</p>
           <p className="mt-1">
-            Made with <span className="text-primary">♥</span> for our special day
+            Được tạo với <span className="text-primary">♥</span> cho ngày đặc biệt của chúng tôi
           </p>
         </div>
       </div>

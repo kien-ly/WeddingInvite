@@ -22,8 +22,8 @@ import { Textarea } from "@/components/ui/textarea";
 
 // Extended schema with validation
 const formSchema = insertWishSchema.extend({
-  name: z.string().min(2, "Name must be at least 2 characters"),
-  message: z.string().min(5, "Message must be at least 5 characters"),
+  name: z.string().min(2, "Tên phải có ít nhất 2 ký tự"),
+  message: z.string().min(5, "Lời chúc phải có ít nhất 5 ký tự"),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -55,8 +55,8 @@ export default function WishesSection() {
     },
     onSuccess: () => {
       toast({
-        title: "Wish Submitted",
-        description: "Thank you for your lovely wishes!",
+        title: "Gửi Lời Chúc Thành Công",
+        description: "Cảm ơn lời chúc tốt đẹp của bạn!",
       });
       form.reset();
       setIsSubmitting(false);
@@ -64,8 +64,8 @@ export default function WishesSection() {
     },
     onError: (error) => {
       toast({
-        title: "Error",
-        description: "Failed to submit wish. Please try again.",
+        title: "Lỗi",
+        description: "Không thể gửi lời chúc. Vui lòng thử lại.",
         variant: "destructive",
       });
       setIsSubmitting(false);
@@ -95,11 +95,11 @@ export default function WishesSection() {
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="font-['Playfair_Display'] text-4xl md:text-5xl text-neutral-800 mb-4">
-            Wishes & Guestbook
+            Lời Chúc & Sổ Lưu Niệm
           </h2>
           <div className="w-16 h-0.5 bg-primary mx-auto mb-6"></div>
           <p className="max-w-2xl mx-auto text-neutral-700">
-            Share your wishes and blessings for our journey together.
+            Hãy chia sẻ lời chúc phúc của bạn cho hành trình tình yêu của chúng tôi.
           </p>
         </div>
         
@@ -114,10 +114,10 @@ export default function WishesSection() {
                 name="name"
                 render={({ field }) => (
                   <FormItem className="mb-4">
-                    <FormLabel className="text-neutral-700 font-medium">Your Name</FormLabel>
+                    <FormLabel className="text-neutral-700 font-medium">Tên Của Bạn</FormLabel>
                     <FormControl>
                       <Input 
-                        placeholder="Your Name" 
+                        placeholder="Họ và tên" 
                         className="rounded-md border-primary/20 focus:border-primary focus:ring focus:ring-primary/20 focus:ring-opacity-50" 
                         {...field} 
                       />
@@ -132,10 +132,10 @@ export default function WishesSection() {
                 name="message"
                 render={({ field }) => (
                   <FormItem className="mb-4">
-                    <FormLabel className="text-neutral-700 font-medium">Your Wish</FormLabel>
+                    <FormLabel className="text-neutral-700 font-medium">Lời Chúc Của Bạn</FormLabel>
                     <FormControl>
                       <Textarea 
-                        placeholder="Share your wishes for the couple..." 
+                        placeholder="Chia sẻ lời chúc của bạn cho cặp đôi..." 
                         className="rounded-md border-primary/20 focus:border-primary focus:ring focus:ring-primary/20 focus:ring-opacity-50" 
                         rows={3}
                         {...field} 
@@ -152,7 +152,7 @@ export default function WishesSection() {
                   disabled={isSubmitting}
                   className="bg-primary hover:bg-primary-light text-white font-semibold py-2 px-6 rounded-md"
                 >
-                  {isSubmitting ? "Sending..." : "Send Wishes"}
+                  {isSubmitting ? "Đang Gửi..." : "Gửi Lời Chúc"}
                 </Button>
               </div>
             </form>
@@ -160,11 +160,11 @@ export default function WishesSection() {
           
           <div className="space-y-6">
             <h3 className="font-['Playfair_Display'] text-2xl text-neutral-800 text-center mb-4">
-              Recent Wishes
+              Lời Chúc Gần Đây
             </h3>
             
             {isLoading ? (
-              <p className="text-center py-4">Loading wishes...</p>
+              <p className="text-center py-4">Đang tải lời chúc...</p>
             ) : visibleWishes.length > 0 ? (
               <div className="space-y-6">
                 {visibleWishes.map((wish) => (
@@ -175,7 +175,7 @@ export default function WishesSection() {
                       </div>
                       <div className="ml-3">
                         <p className="font-medium text-neutral-800">{wish.name}</p>
-                        <p className="text-xs text-neutral-600">{formatDate(wish.createdAt)}</p>
+                        <p className="text-xs text-neutral-600">{formatDate(wish.createdAt || "")}</p>
                       </div>
                     </div>
                     <p className="text-neutral-700">{wish.message}</p>
@@ -189,14 +189,14 @@ export default function WishesSection() {
                       className="text-primary hover:text-primary/80 transition-colors font-medium"
                       onClick={loadMoreWishes}
                     >
-                      Load More Wishes <span className="ml-1">↓</span>
+                      Xem Thêm Lời Chúc <span className="ml-1">↓</span>
                     </Button>
                   </div>
                 )}
               </div>
             ) : (
               <p className="text-center py-8 text-neutral-500">
-                No wishes yet. Be the first to leave your wishes!
+                Chưa có lời chúc nào. Hãy là người đầu tiên gửi lời chúc!
               </p>
             )}
           </div>

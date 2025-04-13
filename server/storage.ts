@@ -94,4 +94,11 @@ const initAdminUser = async () => {
 // Initialize the database
 initAdminUser().catch(err => console.error("Failed to initialize admin user:", err));
 
+// Default to PostgreSQL storage
+console.log('Using PostgreSQL storage');
 export const storage = new DatabaseStorage();
+
+// To use DynamoDB storage, uncomment the following line and comment out the line above
+// Requires AWS credentials to be set in environment variables
+// import { dynamoDBStorage } from './dynamodb-storage';
+// export const storage = dynamoDBStorage;

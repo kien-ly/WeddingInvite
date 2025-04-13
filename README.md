@@ -483,26 +483,17 @@ aws dynamodb create-table \
 # No need for Users table as it has been removed from the application
 ```
 
-2. To use DynamoDB instead of PostgreSQL, update the `server/storage.ts` file:
-
-```typescript
-// Comment out the PostgreSQL storage lines
-// console.log('Using PostgreSQL storage');
-// export const storage = new DatabaseStorage();
-
-// Uncomment the DynamoDB storage lines
-import { dynamoDBStorage } from './dynamodb-storage';
-export const storage = dynamoDBStorage;
-```
-
-3. Set the following environment variables:
+2. To use DynamoDB instead of PostgreSQL, update the `.env` file:
 
 ```
-AWS_REGION=us-east-1
-AWS_ACCESS_KEY_ID=your_access_key
-AWS_SECRET_ACCESS_KEY=your_secret_key
+# Uncomment the DynamoDB configuration
 USE_DYNAMODB=true
+AWS_REGION=us-east-1
+AWS_ACCESS_KEY_ID=your_access_key_id
+AWS_SECRET_ACCESS_KEY=your_secret_access_key
 ```
+
+The application will automatically switch to using DynamoDB when `USE_DYNAMODB=true` is set.
 
 ## Support
 

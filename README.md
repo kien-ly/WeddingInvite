@@ -402,27 +402,35 @@ export const GALLERY_IMAGES = [
 ];
 ```
 
-## Admin Access
+## Environment Variables
 
-The default admin credentials are:
-- Username: admin
-- Password: weddingadmin2023
+The application uses environment variables for configuration. These are stored in a `.env` file in the root directory. The following variables are available:
 
-After logging in as admin, you can:
-1. View all submitted RSVPs
-2. View all wishes left by guests
+```
+# PostgreSQL Configuration (Default)
+DATABASE_URL=postgres://postgres:postgres@localhost:5432/wedding
 
-For security purposes, please change the admin password in production.
+# DynamoDB Configuration (Alternative)
+# USE_DYNAMODB=true
+# AWS_REGION=us-east-1
+# AWS_ACCESS_KEY_ID=your_access_key_id
+# AWS_SECRET_ACCESS_KEY=your_secret_access_key
+
+# Application Settings
+PORT=5000
+NODE_ENV=development
+```
+
+To use DynamoDB, uncomment the DynamoDB variables and set your AWS credentials.
 
 ## Database Schema
 
 ### PostgreSQL (Default)
 
-The application uses three main tables:
+The application uses two main tables:
 
-1. `users` - Stores admin user information
-2. `rsvps` - Stores guest RSVP submissions
-3. `wishes` - Stores wishes and messages from guests
+1. `rsvps` - Stores guest RSVP submissions
+2. `wishes` - Stores wishes and messages from guests
 
 To modify the PostgreSQL schema, edit the `shared/schema.ts` file and then run `npm run db:push` to apply the changes.
 
@@ -430,9 +438,8 @@ To modify the PostgreSQL schema, edit the `shared/schema.ts` file and then run `
 
 The application can also be configured to use Amazon DynamoDB with the following tables:
 
-1. `users` - Stores admin user information
-2. `SVPS` - Stores guest RSVP submissions (As requested in specifications)
-3. `wish` - Stores wishes and messages from guests (As requested in specifications)
+1. `SVPS` - Stores guest RSVP submissions (As requested in specifications)
+2. `wish` - Stores wishes and messages from guests (As requested in specifications)
 
 #### Setting up DynamoDB
 
@@ -459,15 +466,7 @@ aws dynamodb create-table \
     --provisioned-throughput \
         ReadCapacityUnits=5,WriteCapacityUnits=5
 
-# Create Users table
-aws dynamodb create-table \
-    --table-name users \
-    --attribute-definitions \
-        AttributeName=id,AttributeType=N \
-    --key-schema \
-        AttributeName=id,KeyType=HASH \
-    --provisioned-throughput \
-        ReadCapacityUnits=5,WriteCapacityUnits=5
+# No need for Users table as it has been removed from the application
 ```
 
 2. To use DynamoDB instead of PostgreSQL, update the `server/storage.ts` file:

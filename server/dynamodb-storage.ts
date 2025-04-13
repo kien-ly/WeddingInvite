@@ -1,5 +1,4 @@
 import { 
-  type User, type InsertUser,
   type Rsvp, type InsertRsvp,
   type Wish, type InsertWish
 } from "@shared/schema";
@@ -8,73 +7,11 @@ import { dynamoDb, TABLES } from "./dynamodb";
 import { 
   PutCommand, 
   GetCommand, 
-  ScanCommand, 
-  QueryCommand 
+  ScanCommand
 } from "@aws-sdk/lib-dynamodb";
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 
 export class DynamoDBStorage implements IStorage {
-  // User methods
-  async getUser(id: number): Promise<User | undefined> {
-    const params = {
-      TableName: "users", // We'll keep users in a separate table
-      Key: { id }
-    };
-
-    try {
-      const { Item } = await dynamoDb.send(new GetCommand(params));
-      return Item as User | undefined;
-    } catch (error) {
-      console.error("Error fetching user:", error);
-      return undefined;
-    }
-  }
-
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    const params = {
-      TableName: "users",
-      IndexName: "UsernameIndex", // Would need to create this secondary index
-      KeyConditionExpression: "username = :username",
-      ExpressionAttributeValues: {
-        ":username": username
-      }
-    };
-
-    try {
-      const { Items } = await dynamoDb.send(new QueryCommand(params));
-      return Items && Items.length > 0 ? Items[0] as User : undefined;
-    } catch (error) {
-      console.error("Error fetching user by username:", error);
-      
-      // Fallback for local development - scan the full table
-      // Not recommended for production due to performance issues
-      try {
-        const { Items } = await dynamoDb.send(new ScanCommand({ TableName: "users" }));
-        return Items?.find(item => item.username === username) as User | undefined;
-      } catch (scanError) {
-        console.error("Error scanning users table:", scanError);
-        return undefined;
-      }
-    }
-  }
-
-  async createUser(insertUser: InsertUser): Promise<User> {
-    const id = Date.now(); // Use timestamp as a simple ID generator
-    const user: User = { ...insertUser, id };
-
-    const params = {
-      TableName: "users",
-      Item: user
-    };
-
-    try {
-      await dynamoDb.send(new PutCommand(params));
-      return user;
-    } catch (error) {
-      console.error("Error creating user:", error);
-      throw error;
-    }
-  }
 
   // RSVP methods
   async getAllRsvps(): Promise<Rsvp[]> {
@@ -203,26 +140,5 @@ export class DynamoDBStorage implements IStorage {
     }
   }
 }
-
-// Initialize the admin user if none exists
-const initAdminUser = async () => {
-  const storage = new DynamoDBStorage();
-  try {
-    const adminUser = await storage.getUserByUsername("admin");
-    
-    if (!adminUser) {
-      await storage.createUser({
-        username: "admin",
-        password: "weddingadmin2023"
-      });
-      console.log("Admin user created successfully");
-    }
-  } catch (error) {
-    console.error("Failed to initialize admin user:", error);
-  }
-};
-
-// Initialize the database
-initAdminUser().catch(err => console.error("Failed to initialize admin user:", err));
 
 export const dynamoDBStorage = new DynamoDBStorage();

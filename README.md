@@ -75,9 +75,23 @@ npm run db:push
 
 ### Step 6: Run Development Server
 
+#### For Unix/Linux/macOS:
 ```bash
-# Start the development server
+# Option 1: Using npm script
 npm run dev
+
+# Option 2: Using the bash script
+bash start.sh
+```
+
+#### For Windows:
+```bash
+# Option 1: Using the batch file
+start.bat
+
+# Option 2: Set environment variable manually
+set NODE_ENV=development
+npx tsx server/index.ts
 ```
 
 The application should now be running at http://localhost:5000

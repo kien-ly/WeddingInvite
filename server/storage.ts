@@ -55,25 +55,6 @@ export class DatabaseStorage implements IStorage {
   }
 }
 
-// Function to choose the appropriate storage implementation
-function getStorage(): IStorage {
-  try {
-    if (process.env.USE_DYNAMODB === 'true') {
-      // This requires AWS credentials to be set in environment variables
-      console.log('Using DynamoDB storage');
-      // Synchronous import since we need to have the storage immediately
-      const { dynamoDBStorage } = require('./dynamodb-storage');
-      return dynamoDBStorage;
-    } else {
-      console.log('Using PostgreSQL storage');
-      return new DatabaseStorage();
-    }
-  } catch (error) {
-    console.error('Error initializing storage:', error);
-    console.log('Falling back to PostgreSQL storage');
-    return new DatabaseStorage();
-  }
-}
-
-// Export the selected storage implementation
-export const storage = getStorage();
+// Using PostgreSQL storage exclusively
+console.log('Using PostgreSQL storage');
+export const storage = new DatabaseStorage();

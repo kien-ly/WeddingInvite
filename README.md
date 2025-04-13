@@ -145,9 +145,7 @@ sudo apt install -y nginx
 sudo apt install -y git
 ```
 
-### Step 4: Database Configuration
-
-#### Option A: Configure PostgreSQL (Default)
+### Step 4: Configure PostgreSQL Database
 
 ```bash
 # Login to PostgreSQL as postgres user
@@ -165,50 +163,6 @@ GRANT ALL PRIVILEGES ON DATABASE wedding TO weddinguser;
 # Exit PostgreSQL
 \q
 ```
-
-#### Option B: Configure AWS CLI for DynamoDB
-
-```bash
-# Install AWS CLI
-sudo apt install -y awscli
-
-# Configure AWS CLI with your credentials
-aws configure
-# Enter your AWS Access Key ID
-# Enter your AWS Secret Access Key
-# Enter your AWS region (e.g., us-east-1)
-# Enter your preferred output format (e.g., json)
-
-# Create the DynamoDB tables
-aws dynamodb create-table \
-    --table-name SVPS \
-    --attribute-definitions \
-        AttributeName=id,AttributeType=N \
-    --key-schema \
-        AttributeName=id,KeyType=HASH \
-    --provisioned-throughput \
-        ReadCapacityUnits=5,WriteCapacityUnits=5
-
-aws dynamodb create-table \
-    --table-name wish \
-    --attribute-definitions \
-        AttributeName=id,AttributeType=N \
-    --key-schema \
-        AttributeName=id,KeyType=HASH \
-    --provisioned-throughput \
-        ReadCapacityUnits=5,WriteCapacityUnits=5
-
-aws dynamodb create-table \
-    --table-name users \
-    --attribute-definitions \
-        AttributeName=id,AttributeType=N \
-    --key-schema \
-        AttributeName=id,KeyType=HASH \
-    --provisioned-throughput \
-        ReadCapacityUnits=5,WriteCapacityUnits=5
-```
-
-Alternatively, you can create the tables through the AWS Management Console.
 
 ### Step 5: Clone and Setup the Application
 
@@ -229,22 +183,14 @@ cd wedding-website
 npm install
 
 # Create .env file with configuration
-# For PostgreSQL
 echo "DATABASE_URL=postgres://weddinguser:your-secure-password@localhost:5432/wedding" > .env
-
-# OR for DynamoDB
-# echo "USE_DYNAMODB=true" > .env
-# echo "AWS_REGION=us-east-1" >> .env
-# Note: If using EC2 instance profile, you don't need to set the AWS credentials
-
-# If using DynamoDB, update the storage.ts file
-# nano server/storage.ts
-# (Uncomment the DynamoDB storage lines and comment out PostgreSQL lines as shown in the Database Schema section)
+echo "PORT=5000" >> .env
+echo "NODE_ENV=production" >> .env
 
 # Build the application
 npm run build
 
-# If using PostgreSQL, push database schema
+# Push database schema
 npm run db:push
 ```
 
@@ -421,79 +367,22 @@ export const GALLERY_IMAGES = [
 The application uses environment variables for configuration. These are stored in a `.env` file in the root directory. The following variables are available:
 
 ```
-# PostgreSQL Configuration (Default)
+# PostgreSQL Configuration
 DATABASE_URL=postgres://postgres:postgres@localhost:5432/wedding
-
-# DynamoDB Configuration (Alternative)
-# USE_DYNAMODB=true
-# AWS_REGION=us-east-1
-# AWS_ACCESS_KEY_ID=your_access_key_id
-# AWS_SECRET_ACCESS_KEY=your_secret_access_key
 
 # Application Settings
 PORT=5000
 NODE_ENV=development
 ```
 
-To use DynamoDB, uncomment the DynamoDB variables and set your AWS credentials.
-
 ## Database Schema
 
-### PostgreSQL (Default)
-
-The application uses two main tables:
+The application uses two main tables in PostgreSQL:
 
 1. `rsvps` - Stores guest RSVP submissions
 2. `wishes` - Stores wishes and messages from guests
 
-To modify the PostgreSQL schema, edit the `shared/schema.ts` file and then run `npm run db:push` to apply the changes.
-
-### DynamoDB (Alternative)
-
-The application can also be configured to use Amazon DynamoDB with the following tables:
-
-1. `SVPS` - Stores guest RSVP submissions (As requested in specifications)
-2. `wish` - Stores wishes and messages from guests (As requested in specifications)
-
-#### Setting up DynamoDB
-
-1. Create the DynamoDB tables using the AWS Management Console or AWS CLI:
-
-```bash
-# Create RSVP table
-aws dynamodb create-table \
-    --table-name SVPS \
-    --attribute-definitions \
-        AttributeName=id,AttributeType=N \
-    --key-schema \
-        AttributeName=id,KeyType=HASH \
-    --provisioned-throughput \
-        ReadCapacityUnits=5,WriteCapacityUnits=5
-
-# Create Wish table
-aws dynamodb create-table \
-    --table-name wish \
-    --attribute-definitions \
-        AttributeName=id,AttributeType=N \
-    --key-schema \
-        AttributeName=id,KeyType=HASH \
-    --provisioned-throughput \
-        ReadCapacityUnits=5,WriteCapacityUnits=5
-
-# No need for Users table as it has been removed from the application
-```
-
-2. To use DynamoDB instead of PostgreSQL, update the `.env` file:
-
-```
-# Uncomment the DynamoDB configuration
-USE_DYNAMODB=true
-AWS_REGION=us-east-1
-AWS_ACCESS_KEY_ID=your_access_key_id
-AWS_SECRET_ACCESS_KEY=your_secret_access_key
-```
-
-The application will automatically switch to using DynamoDB when `USE_DYNAMODB=true` is set.
+To modify the schema, edit the `shared/schema.ts` file and then run `npm run db:push` to apply the changes.
 
 ## Support
 

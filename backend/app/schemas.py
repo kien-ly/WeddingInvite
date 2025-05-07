@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict # Thêm ConfigDict
 from typing import Optional
 from datetime import datetime
 
@@ -14,8 +14,8 @@ class Wish(WishBase):
     id: int
     created_at: datetime
 
-    class Config:
-        orm_mode = True # Cho phép Pydantic đọc dữ liệu từ model SQLAlchemy
+    model_config = ConfigDict(from_attributes=True) # Đã sửa
+
 
 # --- Confirmation Schemas ---
 class ConfirmationBase(BaseModel):
@@ -31,5 +31,4 @@ class Confirmation(ConfirmationBase):
     id: int
     created_at: datetime
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True) # Đã sửa

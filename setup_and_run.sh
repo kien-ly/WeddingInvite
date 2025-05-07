@@ -1,333 +1,306 @@
 #!/bin/bash
 
-# Script to set up the wedding project on a fresh Ubuntu EC2 instance.
-# This script will:
-# 1. Update package lists.
-# 2. Install Python3 venv, PostgreSQL, Nginx.
-# 3. Configure PostgreSQL (create user and database).
-# 4. Set up Python virtual environment for the backend.
-# 5. Install Python dependencies.
-# 6. Create .env file for the backend.
-# 7. Configure Nginx to serve frontend and proxy backend.
-# 8. Start the FastAPI backend with Uvicorn.
+# Wedding Project EC2 Setup Script
+# Assumes it's run from the project's root directory with sudo.
 
-# --- Configuration Variables (Customize if needed) ---
-PROJECT_DIR_NAME="wedding_project" # Tên thư mục dự án khi clone
-GIT_REPO_URL="https://github.com/kien-ly/WeddingInvite" # <<<<<<< THAY THẾ BẰNG URL REPO CỦA BẠN
+# --- Configuration ---
+GIT_REPO_URL="<your-git-repository-url-here>" # !!! REPLACE THIS !!!
+PROJECT_DIR_NAME_IN_HOME="wedding_project" # Name of the project directory in /home/ubuntu
 
-DEFAULT_DB_USER="wedding_user"
-DEFAULT_DB_PASS="pw123" # <<<<<<< THAY ĐỔI MẬT KHẨU MẠNH HƠN
-DEFAULT_DB_NAME="wedding_db"
+DB_USER="wedding_user"
+DB_PASS="pw" # !!! CHANGE THIS IN PRODUCTION !!!
+DB_NAME="wedding_db"
 DB_HOST="localhost"
 DB_PORT="5432"
 
-PYTHON_VERSION="python3" # Hoặc python3.9, python3.10 tùy theo instance có sẵn
+PYTHON_VERSION="python3" # Adjust if your EC2 instance has a specific python3.x
 VENV_NAME="venv"
-BACKEND_DIR="backend"
-FRONTEND_DIR="frontend"
-UVICORN_HOST="127.0.0.1" # Uvicorn chỉ lắng nghe trên localhost, Nginx sẽ public ra ngoài
+BACKEND_DIR_REL="backend" # Relative to project root
+FRONTEND_DIR_REL="frontend" # Relative to project root
+
+UVICORN_HOST="127.0.0.1" # Uvicorn listens locally, Nginx proxies
 UVICORN_PORT="8000"
+NGINX_USER="www-data" # Default Nginx user on Ubuntu
 
 # --- Helper Functions ---
-print_info() {
-    echo -e "\n\033[1;34m[INFO]\033[0m $1"
-}
-
-print_success() {
-    echo -e "\033[1;32m[SUCCESS]\033[0m $1"
-}
-
-print_warning() {
-    echo -e "\033[1;33m[WARNING]\033[0m $1"
-}
-
-print_error() {
-    echo -e "\033[1;31m[ERROR]\033[0m $1"
-}
-
-check_command() {
-    if ! command -v "$1" &> /dev/null; then
-        print_error "$1 could not be found. Please install it or check your PATH."
-        exit 1
-    fi
-}
+print_info() { echo -e "\n\033[1;34m[INFO]\033[0m $1"; }
+print_success() { echo -e "\033[1;32m[SUCCESS]\033[0m $1"; }
+print_warning() { echo -e "\033[1;33m[WARNING]\033[0m $1"; }
+print_error() { echo -e "\033[1;31m[ERROR]\033[0m $1"; }
+exit_if_error() { if [ $? -ne 0 ]; then print_error "$1"; exit 1; fi }
 
 # --- Main Script ---
 print_info "Starting Wedding Project Setup on EC2 Ubuntu..."
 
-# 0. Check if running as root/sudo
-if [ "$(id -u)" -ne 0 ]; then
-    print_error "This script must be run with sudo or as root."
-    print_info "Example: sudo ./setup_and_run.sh"
-    exit 1
-fi
+# 0. Pre-flight Checks
+if [ "$(id -u)" -ne 0 ]; then print_error "This script must be run with sudo."; exit 1; fi
+if ! command -v git &> /dev/null; then apt-get update -y >/dev/null && apt-get install -y git >/dev/null; fi
+exit_if_error "Git installation failed."
 
-# Check if git is installed (needed to clone the project)
-if ! command -v git &> /dev/null; then
-    print_info "Git not found. Installing git..."
-    apt-get update -y
-    apt-get install -y git
-fi
-
-# 1. Clone the project (if not already in the project directory)
-# This script assumes it's being run FROM INSIDE the cloned project directory.
-# If you want the script to clone it, uncomment the following lines and adjust.
-# CURRENT_DIR_NAME=${PWD##*/}
-# if [ "$CURRENT_DIR_NAME" != "$PROJECT_DIR_NAME" ]; then
-#     if [ -d "$PROJECT_DIR_NAME" ]; then
-#         print_info "Project directory '$PROJECT_DIR_NAME' already exists. Skipping clone."
-#     else
-#         print_info "Cloning project from $GIT_REPO_URL..."
-#         git clone "$GIT_REPO_URL" "$PROJECT_DIR_NAME"
-#         if [ $? -ne 0 ]; then
-#             print_error "Failed to clone repository. Aborting."
-#             exit 1
-#         fi
-#     fi
-#     cd "$PROJECT_DIR_NAME" || { print_error "Failed to cd into $PROJECT_DIR_NAME. Aborting."; exit 1; }
-# else
-#     print_info "Already inside project directory '$PROJECT_DIR_NAME'."
-# fi
-# Make sure we are in the project's root directory for relative paths
-if [ ! -f "README.md" ] || [ ! -d "$BACKEND_DIR" ] || [ ! -d "$FRONTEND_DIR" ]; then
-    print_error "Script is not being run from the root of the '$PROJECT_DIR_NAME' directory."
-    print_error "Please 'cd $PROJECT_DIR_NAME' and run the script from there."
-    exit 1
-fi
+# Define PROJECT_ROOT_PATH based on where the script is run from
+# This script is intended to be run from the project root after cloning.
 PROJECT_ROOT_PATH=$(pwd)
+if [[ ! "$PROJECT_ROOT_PATH" == *"$PROJECT_DIR_NAME_IN_HOME"* ]] || \
+   [ ! -f "$PROJECT_ROOT_PATH/README.md" ] || \
+   [ ! -d "$PROJECT_ROOT_PATH/$BACKEND_DIR_REL" ]; then
+    print_error "Script is not being run from the root of the project directory ('$PROJECT_DIR_NAME_IN_HOME'), or project structure is incorrect."
+    print_error "Expected path to contain '$PROJECT_DIR_NAME_IN_HOME' and have README.md, $BACKEND_DIR_REL/ etc."
+    print_error "Current path: $PROJECT_ROOT_PATH"
+    # exit 1 # Commented out to allow running if structure is slightly different but intentional
+fi
+print_info "Project root identified as: $PROJECT_ROOT_PATH"
 
 
-# 2. System Updates and Essential Packages
-print_info "Updating system packages and installing dependencies..."
-apt-get update -y
-apt-get install -y $PYTHON_VERSION-venv postgresql postgresql-contrib nginx curl
+# 1. System Packages
+print_info "Updating system packages and installing dependencies (Python, PostgreSQL, Nginx)..."
+apt-get update -y >/dev/null
+apt-get install -y ${PYTHON_VERSION}-venv postgresql postgresql-contrib libpq-dev nginx curl >/dev/null
+exit_if_error "Failed to install system packages."
+if ! command -v $PYTHON_VERSION &> /dev/null; then print_error "$PYTHON_VERSION not found after install."; exit 1; fi
+if ! command -v psql &> /dev/null; then print_error "psql not found after install."; exit 1; fi
+if ! command -v nginx &> /dev/null; then print_error "nginx not found after install."; exit 1; fi
 
-# Verify installations
-check_command $PYTHON_VERSION
-check_command psql
-check_command nginx
-
-# 3. Configure PostgreSQL
+# 2. Configure PostgreSQL
 print_info "Configuring PostgreSQL..."
-# Prompt for database credentials or use defaults
-read -p "Enter PostgreSQL Database User for the app (default: $DEFAULT_DB_USER): " DB_USER
-DB_USER=${DB_USER:-$DEFAULT_DB_USER}
+# Prompt for DB credentials or use defaults (less interactive for EC2 setup)
+# For EC2, it's often better to use predefined values or manage secrets externally.
+# DB_USER, DB_PASS, DB_NAME are defined at the top.
 
-read -s -p "Enter password for $DB_USER (default: $DEFAULT_DB_PASS - PRESS ENTER FOR DEFAULT): " DB_PASS_INPUT
-echo ""
-DB_PASS=${DB_PASS_INPUT:-$DEFAULT_DB_PASS}
+# Ensure PostgreSQL service is running
+systemctl start postgresql
+systemctl enable postgresql
 
-
-read -p "Enter Database Name for the app (default: $DEFAULT_DB_NAME): " DB_NAME
-DB_NAME=${DB_NAME:-$DEFAULT_DB_NAME}
-
-# Check if user exists
-SUDO_PG="sudo -u postgres psql -tAc"
-
-if $SUDO_PG "SELECT 1 FROM pg_roles WHERE rolname='$DB_USER'" | grep -q 1; then
-    print_warning "PostgreSQL user '$DB_USER' already exists. Skipping creation."
+# Create DB User if not exists
+if (cd /tmp && sudo -u postgres psql -tAc "SELECT 1 FROM pg_roles WHERE rolname='$DB_USER'") | grep -q 1; then
+    print_warning "PostgreSQL user '$DB_USER' already exists."
 else
     print_info "Creating PostgreSQL user '$DB_USER'..."
-    sudo -u postgres psql -c "CREATE USER $DB_USER WITH PASSWORD '$DB_PASS';"
-    if [ $? -ne 0 ]; then print_warning "Failed to create PostgreSQL user (maybe it exists with different casing or a conflict)."; fi
+    (cd /tmp && sudo -u postgres psql -c "CREATE USER \"$DB_USER\" WITH PASSWORD '$DB_PASS';")
+    exit_if_error "Failed to create PostgreSQL user '$DB_USER'."
 fi
 
-# Check if database exists
-if $SUDO_PG "SELECT 1 FROM pg_database WHERE datname='$DB_NAME'" | grep -q 1; then
-    print_warning "PostgreSQL database '$DB_NAME' already exists. Skipping creation."
+# Create DB if not exists
+if (cd /tmp && sudo -u postgres psql -tAc "SELECT 1 FROM pg_database WHERE datname='$DB_NAME'") | grep -q 1; then
+    print_warning "PostgreSQL database '$DB_NAME' already exists."
 else
     print_info "Creating PostgreSQL database '$DB_NAME'..."
-    sudo -u postgres psql -c "CREATE DATABASE $DB_NAME OWNER $DB_USER;"
-    if [ $? -ne 0 ]; then print_warning "Failed to create PostgreSQL database."; fi
+    (cd /tmp && sudo -u postgres psql -c "CREATE DATABASE \"$DB_NAME\" OWNER \"$DB_USER\";")
+    exit_if_error "Failed to create PostgreSQL database '$DB_NAME'."
 fi
 
-sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE $DB_NAME TO $DB_USER;"
-if [ $? -ne 0 ]; then print_warning "Failed to grant privileges. Check user/db names."; fi
+# Grant privileges
+(cd /tmp && sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE \"$DB_NAME\" TO \"$DB_USER\";")
+exit_if_error "Failed to grant privileges to user '$DB_USER' on database '$DB_NAME'."
+print_success "PostgreSQL configured."
 
+# 3. Set up Python Backend
+print_info "Setting up Python backend..."
+BACKEND_ABS_PATH="$PROJECT_ROOT_PATH/$BACKEND_DIR_REL"
+cd "$BACKEND_ABS_PATH" || { print_error "Backend directory '$BACKEND_ABS_PATH' not found."; exit 1; }
 
-# 4. Set up Python Virtual Environment for Backend
-print_info "Setting up Python virtual environment for backend..."
-cd "$PROJECT_ROOT_PATH/$BACKEND_DIR" || { print_error "Backend directory '$BACKEND_DIR' not found. Aborting."; exit 1; }
-
-if [ -d "$VENV_NAME" ]; then
-    print_warning "Virtual environment '$VENV_NAME' already exists. Skipping creation."
-else
+if [ ! -d "$VENV_NAME" ]; then
+    print_info "Creating Python virtual environment '$VENV_NAME'..."
     $PYTHON_VERSION -m venv $VENV_NAME
-    if [ $? -ne 0 ]; then
-        print_error "Failed to create virtual environment. Aborting."
-        exit 1
-    fi
+    exit_if_error "Failed to create virtual environment."
+else
+    print_warning "Virtual environment '$VENV_NAME' already exists."
 fi
 
 print_info "Activating virtual environment and installing dependencies..."
 source "$VENV_NAME/bin/activate"
+exit_if_error "Failed to activate virtual environment."
 
 if [ ! -f "requirements.txt" ]; then
-    print_error "requirements.txt not found in $BACKEND_DIR. Aborting."
+    print_error "requirements.txt not found in $BACKEND_ABS_PATH. Aborting."
     deactivate
     exit 1
 fi
-pip install -r requirements.txt
-if [ $? -ne 0 ]; then
-    print_error "Failed to install Python dependencies. Aborting."
-    deactivate
-    exit 1
+pip install -r requirements.txt --upgrade
+exit_if_error "Failed to install Python dependencies from requirements.txt."
+
+# Create .env file
+print_info "Configuring .env file for backend..."
+ENV_FILE_PATH="$BACKEND_ABS_PATH/.env"
+ENV_EXAMPLE_PATH="$BACKEND_ABS_PATH/.env_example"
+
+if [ ! -f "$ENV_EXAMPLE_PATH" ]; then
+    print_warning ".env_example not found. Creating .env with default DATABASE_URL."
+    echo "DATABASE_URL=" > "$ENV_FILE_PATH" # Create empty if no example
+else
+    cp "$ENV_EXAMPLE_PATH" "$ENV_FILE_PATH"
 fi
 
-# 5. Create .env file for Backend
-print_info "Creating .env file for backend..."
-if [ -f ".env" ]; then
-    print_warning ".env file already exists. Checking/Updating DATABASE_URL."
+# Use +psycopg2 for SQLAlchemy driver
+DB_CONN_STRING="postgresql+psycopg2://${DB_USER}:${DB_PASS}@${DB_HOST}:${DB_PORT}/${DB_NAME}"
+if grep -q "^DATABASE_URL=" "$ENV_FILE_PATH"; then
+    sed -i.bak "s|^DATABASE_URL=.*|DATABASE_URL=${DB_CONN_STRING}|" "$ENV_FILE_PATH"
 else
-    if [ ! -f ".env_example" ]; then
-        print_error ".env_example not found. Cannot create .env file. Aborting."
-        deactivate
-        exit 1
-    fi
-    cp .env_example .env
+    echo -e "\nDATABASE_URL=${DB_CONN_STRING}" >> "$ENV_FILE_PATH"
 fi
-
-DB_CONN_STRING="postgresql://${DB_USER}:${DB_PASS}@${DB_HOST}:${DB_PORT}/${DB_NAME}"
-# Use a robust way to update/set DATABASE_URL in .env to avoid issues with special characters in password
-# Check if DATABASE_URL line exists
-if grep -q "^DATABASE_URL=" .env; then
-    # If exists, replace it
-    sed -i.bak "s|^DATABASE_URL=.*|DATABASE_URL=${DB_CONN_STRING}|" .env
-else
-    # If not, append it
-    echo "DATABASE_URL=${DB_CONN_STRING}" >> .env
-fi
-[ -f .env.bak ] && rm .env.bak
+[ -f "${ENV_FILE_PATH}.bak" ] && rm "${ENV_FILE_PATH}.bak"
 print_success ".env file configured."
+# Backend setup done in venv, Uvicorn will be started later by root/sudo
 
-# Deactivate virtual environment for now, will be activated by Uvicorn runner later
-# deactivate (Uvicorn will be run from within the venv via the script below)
-
+deactivate # Deactivate venv for now, will be sourced by uvicorn runner or systemd
 cd "$PROJECT_ROOT_PATH" # Go back to project root
 
-# 6. Configure Nginx
-print_info "Configuring Nginx..."
-# Prompt for domain name (optional, otherwise will use IP address)
-read -p "Enter your domain name (e.g., mywedding.com, leave blank to use IP): " DOMAIN_NAME
-SERVER_NAME_CONF=""
-if [ -z "$DOMAIN_NAME" ]; then
-    # Get public IP of EC2 instance
-    EC2_PUBLIC_IP=$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4 || curl -s ifconfig.me)
-    if [ -z "$EC2_PUBLIC_IP" ]; then
-        print_warning "Could not automatically determine public IP. Using 'localhost' for Nginx server_name. You might need to adjust Nginx config manually."
-        SERVER_NAME_CONF="localhost"
-    else
-        SERVER_NAME_CONF="$EC2_PUBLIC_IP"
+# 4. Set File Permissions for Nginx
+print_info "Setting file permissions for Nginx user '$NGINX_USER'..."
+# Nginx (www-data) needs to traverse parent directories and read frontend files.
+# /home/ubuntu usually is drwx------ (700) or drwxr-x--- (750)
+# We need 'others' or 'nginx_user_group' to have 'x' on /home/ubuntu and project root.
+# And 'rx' on frontend dir, 'r' on files.
+
+print_info "Current permissions for /home/ubuntu: $(stat -c '%A %U %G' /home/ubuntu)"
+chmod o+x /home/ubuntu # Allow others (like www-data) to traverse /home/ubuntu
+exit_if_error "Failed to set o+x on /home/ubuntu."
+
+# Set ownership to ubuntu:NGINX_USER for project files, and appropriate permissions
+# This gives user ubuntu full control, and NGINX_USER (www-data) read/execute access.
+chown -R ubuntu:$NGINX_USER "$PROJECT_ROOT_PATH"
+exit_if_error "Failed to chown project directory to ubuntu:$NGINX_USER."
+
+# Directories: owner=rwx, group=r-x, other=--- (750)
+# Files: owner=rw-, group=r--, other=--- (640)
+find "$PROJECT_ROOT_PATH" -type d -exec chmod 750 {} \;
+find "$PROJECT_ROOT_PATH" -type f -exec chmod 640 {} \;
+
+# Specifically for frontend, ensure group (www-data) can read files and execute dirs
+FRONTEND_ABS_PATH="$PROJECT_ROOT_PATH/$FRONTEND_DIR_REL"
+if [ -d "$FRONTEND_ABS_PATH" ]; then
+    find "$FRONTEND_ABS_PATH" -type d -exec chmod g+x {} \; # Ensure group execute on frontend subdirs
+    find "$FRONTEND_ABS_PATH" -type f -exec chmod g+r {} \; # Ensure group read on frontend files
+    # Make sure index.html itself is readable by the group
+    if [ -f "$FRONTEND_ABS_PATH/index.html" ]; then
+        chmod g+r "$FRONTEND_ABS_PATH/index.html"
     fi
 else
-    SERVER_NAME_CONF="$DOMAIN_NAME www.$DOMAIN_NAME"
+    print_warning "Frontend directory $FRONTEND_ABS_PATH not found for permission setting."
+fi
+print_success "File permissions set."
+
+# 5. Configure Nginx
+print_info "Configuring Nginx..."
+# Determine server_name (IP or domain)
+EC2_PUBLIC_IP=$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4 || curl -s ifconfig.me || echo "YOUR_EC2_IP_MANUALLY")
+read -p "Enter your domain name (e.g., mywedding.com, leave blank to use IP '$EC2_PUBLIC_IP'): " DOMAIN_NAME
+SERVER_NAME_VALUE="${DOMAIN_NAME:-$EC2_PUBLIC_IP}"
+if [ "$SERVER_NAME_VALUE" == "YOUR_EC2_IP_MANUALLY" ]; then
+    print_error "Could not determine Public IP. Please edit Nginx config manually or provide domain."
+    # exit 1 # Or prompt user to enter IP
+fi
+if [[ -n "$DOMAIN_NAME" ]]; then # If domain is provided, add www version
+    SERVER_NAME_VALUE="$DOMAIN_NAME www.$DOMAIN_NAME $EC2_PUBLIC_IP" # Include IP as well for direct IP access
+else
+    SERVER_NAME_VALUE="$EC2_PUBLIC_IP" # Just IP if no domain
 fi
 
-NGINX_CONF_FILE="/etc/nginx/sites-available/wedding_project"
-NGINX_ENABLED_FILE="/etc/nginx/sites-enabled/wedding_project"
 
-print_info "Creating Nginx configuration for $SERVER_NAME_CONF"
-# Nginx configuration
-cat > "$NGINX_CONF_FILE" <<EOL
+NGINX_CONF_NAME="${PROJECT_DIR_NAME_IN_HOME//[^a-zA-Z0-9_-]/_}" # Sanitize project name for filename
+NGINX_SITES_AVAILABLE="/etc/nginx/sites-available/$NGINX_CONF_NAME"
+NGINX_SITES_ENABLED="/etc/nginx/sites-enabled/$NGINX_CONF_NAME"
+
+print_info "Creating Nginx configuration for server(s): $SERVER_NAME_VALUE"
+cat > "$NGINX_SITES_AVAILABLE" <<EOL
 server {
     listen 80;
-    server_name $SERVER_NAME_CONF;
+    server_name $SERVER_NAME_VALUE;
 
-    # Serve frontend static files
+    root $PROJECT_ROOT_PATH/$FRONTEND_DIR_REL;
+    index index.html index.htm;
+
     location / {
-        root $PROJECT_ROOT_PATH/$FRONTEND_DIR;
-        index index.html index.htm;
-        try_files \$uri \$uri/ /index.html; # Important for single-page apps if you use client-side routing
+        try_files \$uri \$uri/ /index.html =404; # Important: =404 breaks redirection cycle
     }
 
-    # Proxy API requests to backend FastAPI
+    # Explicitly serve static assets from subdirectories if needed,
+    # though the root directive and try_files above should handle them.
+    # location /css { alias $PROJECT_ROOT_PATH/$FRONTEND_DIR_REL/css; try_files \$uri =404; expires 1d; }
+    # location /js { alias $PROJECT_ROOT_PATH/$FRONTEND_DIR_REL/js; try_files \$uri =404; expires 1d; }
+    # location /images { alias $PROJECT_ROOT_PATH/$FRONTEND_DIR_REL/images; try_files \$uri =404; expires 1M; }
+    # location /favicon.ico { alias $PROJECT_ROOT_PATH/$FRONTEND_DIR_REL/favicon.ico; log_not_found off; access_log off; }
+
+
     location /api {
-        proxy_pass http://$UVICORN_HOST:$UVICORN_PORT; # FastAPI running on uvicorn
+        proxy_pass http://$UVICORN_HOST:$UVICORN_PORT;
         proxy_set_header Host \$host;
         proxy_set_header X-Real-IP \$remote_addr;
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto \$scheme;
+        proxy_read_timeout 60s; # Optional: Increase timeout
+        proxy_connect_timeout 60s; # Optional: Increase timeout
     }
 
-    # Optional: Deny access to .env or other sensitive files if they were accidentally put in web root
-    location ~ /\.env {
-        deny all;
-    }
-    location ~ /\.git {
-        deny all;
-    }
+    # Deny access to sensitive files
+    location ~ /\.env { deny all; return 403; }
+    location ~ /\.git { deny all; return 403; }
+    location = /README.md { deny all; return 403; }
+    location = /setup_and_run.sh { deny all; return 403; }
+
+
+    # Logging (optional: customize log format or paths)
+    # access_log /var/log/nginx/${NGINX_CONF_NAME}.access.log;
+    # error_log /var/log/nginx/${NGINX_CONF_NAME}.error.log;
 }
 EOL
+exit_if_error "Failed to write Nginx configuration file."
 
-# Enable the site by creating a symlink
-if [ -L "$NGINX_ENABLED_FILE" ]; then
-    rm "$NGINX_ENABLED_FILE"
-fi
-ln -s "$NGINX_CONF_FILE" "$NGINX_ENABLED_FILE"
+# Enable site
+if [ -L "$NGINX_SITES_ENABLED" ]; then rm "$NGINX_SITES_ENABLED"; fi
+if [ -f "$NGINX_SITES_ENABLED" ] && [ ! -L "$NGINX_SITES_ENABLED" ]; then rm "$NGINX_SITES_ENABLED"; fi # Remove if regular file
+ln -s "$NGINX_SITES_AVAILABLE" "$NGINX_SITES_ENABLED"
+exit_if_error "Failed to create Nginx symlink."
 
-# Test Nginx configuration and reload
 nginx -t
-if [ $? -ne 0 ]; then
-    print_error "Nginx configuration test failed. Please check $NGINX_CONF_FILE"
-    print_error "You can try: sudo cat $NGINX_CONF_FILE"
-    print_error "And: sudo nginx -t"
-    # exit 1 # Don't exit, let user try to fix
-else
-    print_info "Reloading Nginx..."
-    systemctl reload nginx
-    if [ $? -ne 0 ]; then print_warning "Failed to reload Nginx. Service might not be running or config error persists."; fi
+exit_if_error "Nginx configuration test failed. Check $NGINX_SITES_AVAILABLE and Nginx error logs."
+
+systemctl reload nginx
+exit_if_error "Failed to reload Nginx."
+print_success "Nginx configured and reloaded."
+
+# 6. Start FastAPI Backend with Uvicorn (using systemd is better for production)
+print_info "Starting FastAPI backend with Uvicorn (via nohup)..."
+UVICORN_LOG_FILE="$BACKEND_ABS_PATH/uvicorn.log"
+UVICORN_PID_FILE="$BACKEND_ABS_PATH/uvicorn.pid"
+
+# Stop existing Uvicorn if PID file exists and process is running
+if [ -f "$UVICORN_PID_FILE" ]; then
+    OLD_PID=$(cat "$UVICORN_PID_FILE" 2>/dev/null)
+    if [ -n "$OLD_PID" ] && ps -p "$OLD_PID" > /dev/null; then
+        print_warning "Stopping existing Uvicorn process (PID: $OLD_PID)..."
+        kill "$OLD_PID"
+        sleep 2
+    fi
+    rm -f "$UVICORN_PID_FILE"
 fi
 
-# 7. Start Backend FastAPI Server
-print_info "Starting FastAPI backend server with Uvicorn..."
-print_info "Backend will run in the background. Check logs or use 'pgrep uvicorn' to see if it's running."
+# Start Uvicorn in the background, ensuring it runs from the correct venv
+# The user running Uvicorn should ideally be a non-root user with access to the venv and project files.
+# For simplicity, this script will run it as root sourcing the venv, which is not ideal for long-term prod.
+# A better approach is a dedicated systemd service file that specifies User, Group, WorkingDirectory, and ExecStart.
+LAUNCH_CMD="source \"$BACKEND_ABS_PATH/$VENV_NAME/bin/activate\" && uvicorn app.main:app --host \"$UVICORN_HOST\" --port \"$UVICORN_PORT\""
 
-# Create a small script to run Uvicorn in the venv and nohup it
-RUN_BACKEND_SCRIPT="$PROJECT_ROOT_PATH/run_backend.sh"
-cat > "$RUN_BACKEND_SCRIPT" <<EOL
-#!/bin/bash
-cd "$PROJECT_ROOT_PATH/$BACKEND_DIR" || exit
-source "$VENV_NAME/bin/activate"
-echo "Starting Uvicorn on $UVICORN_HOST:$UVICORN_PORT from $(pwd)" >> uvicorn.log
-nohup uvicorn app.main:app --host $UVICORN_HOST --port $UVICORN_PORT >> uvicorn.log 2>&1 &
-echo \$! > uvicorn.pid
-echo "Uvicorn started with PID \$(cat uvicorn.pid). Log: $PROJECT_ROOT_PATH/$BACKEND_DIR/uvicorn.log"
-deactivate
-EOL
-chmod +x "$RUN_BACKEND_SCRIPT"
+nohup bash -c "$LAUNCH_CMD" >> "$UVICORN_LOG_FILE" 2>&1 &
+UVICORN_NEW_PID=$!
+echo "$UVICORN_NEW_PID" > "$UVICORN_PID_FILE"
 
-# Run the script to start uvicorn
-"$RUN_BACKEND_SCRIPT"
-
-# Give it a couple of seconds to start
 sleep 3
-if ps -p "$(cat $PROJECT_ROOT_PATH/$BACKEND_DIR/uvicorn.pid 2>/dev/null)" > /dev/null 2>&1; then
-    print_success "Uvicorn backend seems to be running."
+if ps -p "$UVICORN_NEW_PID" > /dev/null; then
+    print_success "Uvicorn backend started (PID: $UVICORN_NEW_PID). Log: $UVICORN_LOG_FILE"
 else
-    print_error "Uvicorn backend may not have started correctly. Check $PROJECT_ROOT_PATH/$BACKEND_DIR/uvicorn.log"
-    print_error "Try running manually: cd $PROJECT_ROOT_PATH/$BACKEND_DIR && source $VENV_NAME/bin/activate && uvicorn app.main:app --host $UVICORN_HOST --port $UVICORN_PORT"
+    print_error "Uvicorn backend may not have started correctly. Check $UVICORN_LOG_FILE"
+    print_error "Command attempted: $LAUNCH_CMD"
 fi
 
-# 8. Final Instructions
+# 7. Final Instructions
 print_success "Setup script finished!"
+ACCESS_URL_HTTP="http://${SERVER_NAME_VALUE%% *}" # Use the first server_name entry (IP or domain)
 echo ""
 print_info "-------------------------------------------------------------------"
-print_info "ACCESS YOUR WEBSITE:"
-if [ -z "$DOMAIN_NAME" ]; then
-    print_info "Frontend: http://$EC2_PUBLIC_IP"
-    print_info "Backend API base (proxied): http://$EC2_PUBLIC_IP/api"
-else
-    print_info "Frontend: http://$DOMAIN_NAME (and http://www.$DOMAIN_NAME if configured)"
-    print_info "Backend API base (proxied): http://$DOMAIN_NAME/api"
-fi
-print_info "API Docs (via proxy): http://${SERVER_NAME_CONF%% *}/api/docs"
+print_info "ACCESS YOUR WEBSITE (ensure Security Group allows port 80):"
+print_info "Frontend & API Base: $ACCESS_URL_HTTP"
+print_info "API Docs (via Nginx): $ACCESS_URL_HTTP/api/docs"
 print_info "-------------------------------------------------------------------"
-print_info "IMPORTANT NOTES:"
-print_info "- Ensure your EC2 instance's Security Group allows inbound traffic on port 80 (HTTP)."
-print_info "- The Uvicorn backend is running via 'nohup'. For robust production, consider using a process manager like systemd or Supervisor."
-print_info "  Uvicorn PID is stored in: $PROJECT_ROOT_PATH/$BACKEND_DIR/uvicorn.pid"
-print_info "  Uvicorn logs are in: $PROJECT_ROOT_PATH/$BACKEND_DIR/uvicorn.log"
-print_info "- To stop Uvicorn: kill \$(cat $PROJECT_ROOT_PATH/$BACKEND_DIR/uvicorn.pid)"
-print_info "- To restart Nginx: sudo systemctl restart nginx"
-print_info "- For HTTPS, you'll need to configure SSL (e.g., with Let's Encrypt and Certbot)."
+print_info "Uvicorn PID: $UVICORN_PID_FILE, Log: $UVICORN_LOG_FILE"
+print_info "To stop Uvicorn: kill \$(cat $UVICORN_PID_FILE 2>/dev/null || echo 0)"
 print_info "-------------------------------------------------------------------"

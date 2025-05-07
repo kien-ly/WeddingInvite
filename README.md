@@ -1,120 +1,151 @@
 # Dự án Web Mời Cưới
 
-Đây là một dự án web mời cưới đơn giản được xây dựng với backend FastAPI (Python) và database PostgreSQL. Frontend được viết bằng HTML, CSS, và JavaScript cơ bản.
+Trang web mời cưới đơn giản với backend FastAPI (Python) và database PostgreSQL. Frontend được viết bằng HTML, CSS, và JavaScript. Backend được cấu hình để phục vụ cả API và các file tĩnh của frontend.
 
-## Các chức năng chính
+## Cấu trúc thư mục
+```
+wedding_project/
+├── backend/
+│   ├── app/
+│   │   ├── __init__.py
+│   │   ├── main.py         # FastAPI app, routers, phục vụ frontend
+│   │   ├── models.py       # SQLAlchemy models
+│   │   ├── schemas.py      # Pydantic schemas
+│   │   ├── crud.py         # CRUD functions
+│   │   └── database.py     # Database setup
+│   ├── .env_example        # File mẫu biến môi trường
+│   └── requirements.txt    # Python dependencies
+├── frontend/
+│   ├── index.html
+│   ├── css/style.css
+│   ├── js/script.js
+│   ├── images/             # Chứa hình ảnh của bạn
+│   └── (tùy chọn) favicon.ico
+├── .gitignore
+├── README.md
+└── setup_and_run.sh      # Script cài đặt và chạy trên EC2 Ubuntu
+```
 
-*   Hiển thị thông tin mời cưới.
-*   Form cho khách mời gửi lời chúc.
-*   Form cho khách mời xác nhận tham dự.
-*   Lưu trữ lời chúc và thông tin xác nhận vào database PostgreSQL.
+## Chuẩn bị (Cho cả Local và EC2)
 
-## Yêu cầu cài đặt (Prerequisites)
+1.  **Thay thế placeholder thông tin:**
+    *   Trong `frontend/index.html`: Thay thế tất cả `[Tên Chú Rể]`, `[Tên Cô Dâu]`, `[Ngày Tháng Năm]`, `[Địa Điểm]`, các link Google Maps, v.v.
+    *   Trong `frontend/js/script.js`: **QUAN TRỌNG:** Cập nhật biến `weddingDateTimeString` (gần đầu file và trong `DOMContentLoaded`) thành ngày giờ cưới thực tế của bạn (định dạng `YYYY-MM-DDTHH:MM:SS`).
+    *   Trong `frontend/images/`: Thay thế tất cả các ảnh `placeholder_*.jpg` bằng ảnh thật của bạn. Tham khảo mục "Hình Ảnh Cần Thay Thế" ở cuối README này.
 
-*   Python 3.8+
-*   pip (Python package installer)
-*   PostgreSQL Server
-*   `virtualenv` (khuyến nghị)
-*   Git
+2.  **(Chỉ cho EC2) Cập nhật `setup_and_run.sh`:**
+    *   Mở file `setup_and_run.sh`.
+    *   Thay thế `<your-git-repository-url-here>` bằng URL Git repo của bạn (nếu bạn dùng script để clone).
+    *   Xem xét và thay đổi `DB_PASS` thành một mật khẩu mạnh hơn.
 
-## Hướng dẫn cài đặt và chạy chi tiết
+## Chạy Dự Án Trên Localhost (Ubuntu/Linux)
 
-1.  **Clone repository:**
+Cách này sẽ chạy toàn bộ trang web (frontend và backend) trên một port duy nhất từ máy local của bạn.
+
+**Yêu cầu trên Localhost:**
+*   Python 3.8+ và `pip`
+*   `python3-venv`
+*   PostgreSQL Server (đã cài đặt và đang chạy)
+*   `libpq-dev` (thư viện phát triển PostgreSQL): `sudo apt install libpq-dev`
+
+**Các bước thực hiện:**
+
+1.  **Clone Repository (Nếu chưa có):**
     ```bash
     git clone <your-repository-url> wedding_project
     cd wedding_project
     ```
 
-2.  **Thiết lập PostgreSQL:**
-    *   Đảm bảo PostgreSQL server đang chạy.
-    *   Sử dụng `psql` hoặc một công cụ quản lý PostgreSQL (như pgAdmin) để:
-        *   Tạo một user mới (ví dụ: `wedding_user` với mật khẩu `wedding_pass`).
-            ```sql
-            CREATE USER wedding_user WITH PASSWORD 'wedding_pass';
-            ```
-        *   Tạo một database mới (ví dụ: `wedding_db`) và cấp quyền cho user vừa tạo.
-            ```sql
-            CREATE DATABASE wedding_db OWNER wedding_user;
-            GRANT ALL PRIVILEGES ON DATABASE wedding_db TO wedding_user;
-            ```
-        *   **Quan trọng:** Bạn cần nhớ tên user, mật khẩu và tên database này để cấu hình ở bước sau.
+2.  **Thiết lập PostgreSQL (Nếu chưa làm):**
+    *   Truy cập psql: `sudo -u postgres psql`
+    *   Tạo user và database:
+        ```sql
+        CREATE USER wedding_user WITH PASSWORD 'your_local_db_password'; -- Đặt mật khẩu của bạn
+        CREATE DATABASE wedding_db OWNER wedding_user;
+        GRANT ALL PRIVILEGES ON DATABASE wedding_db TO wedding_user;
+        \q
+        ```
 
 3.  **Cấu hình Backend:**
-    *   Di chuyển vào thư mục `backend`:
-        ```bash
-        cd backend
-        ```
-    *   Tạo và kích hoạt môi trường ảo (khuyến nghị):
+    *   Di chuyển vào thư mục backend: `cd backend`
+    *   Tạo và kích hoạt môi trường ảo:
         ```bash
         python3 -m venv venv
-        source venv/bin/activate  # Trên Linux/macOS
-        # venv\Scripts\activate    # Trên Windows
+        source venv/bin/activate
         ```
-    *   Cài đặt các thư viện Python cần thiết:
+    *   Cài đặt thư viện Python:
         ```bash
         pip install -r requirements.txt
         ```
-    *   Tạo file `.env` từ file `.env_example`:
+    *   Tạo file `.env` từ `.env_example`:
         ```bash
         cp .env_example .env
         ```
-    *   Mở file `.env` và chỉnh sửa dòng `DATABASE_URL` với thông tin PostgreSQL của bạn:
+    *   Mở file `.env` và chỉnh sửa `DATABASE_URL`:
+        ```env
+        DATABASE_URL=postgresql+psycopg2://wedding_user:your_local_db_password@localhost:5432/wedding_db
         ```
-        DATABASE_URL=postgresql://wedding_user:wedding_pass@localhost:5432/wedding_db
-        ```
-        Thay `wedding_user`, `wedding_pass`, `localhost`, `5432`, `wedding_db` cho phù hợp với cài đặt PostgreSQL của bạn.
+        (Thay `your_local_db_password` bằng mật khẩu bạn đã tạo ở trên).
 
-4.  **Chạy Backend (FastAPI server):**
+4.  **Chạy Server FastAPI/Uvicorn:**
     *   Vẫn đang ở trong thư mục `backend` và môi trường ảo đã được kích hoạt:
         ```bash
         uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
         ```
-    *   Server API sẽ chạy tại `http://127.0.0.1:8000`.
-    *   Bạn có thể truy cập `http://127.0.0.1:8000/docs` trong trình duyệt để xem tài liệu API tự động (Swagger UI).
+        Server sẽ phục vụ cả API và frontend.
 
-5.  **Chạy Frontend:**
-    *   Mở file `frontend/index.html` trực tiếp bằng trình duyệt web của bạn.
-    *   **Lưu ý:** Frontend (`index.html`) giao tiếp với backend qua địa chỉ `http://127.0.0.1:8000/api` (đã được cấu hình trong `frontend/js/script.js`). Đảm bảo backend đang chạy.
+5.  **Truy cập Trang Web:**
+    *   Mở trình duyệt và truy cập: `http://localhost:8000` hoặc `http://127.0.0.1:8000`
+    *   API docs (Swagger): `http://localhost:8000/docs`
 
-## Script `setup_and_run.sh`
+6.  **Dừng Server:** Nhấn `Ctrl+C` trong terminal đang chạy Uvicorn. Để thoát môi trường ảo: `deactivate`.
 
-Script này giúp tự động hóa một vài bước cài đặt và khởi chạy server.
+## Triển Khai Lên EC2 Ubuntu (Sử dụng `setup_and_run.sh`)
 
-*   **Nội dung script `setup_and_run.sh` (đặt ở thư mục gốc `wedding_project`):**
-    (Xem ở mục tiếp theo)
+Script `setup_and_run.sh` được thiết kế để tự động hóa việc cài đặt trên một EC2 Ubuntu mới.
 
-*   **Cách sử dụng:**
-    1.  Cấp quyền thực thi cho script:
-        ```bash
-        chmod +x setup_and_run.sh
-        ```
-    2.  Chạy script:
-        ```bash
-        ./setup_and_run.sh
-        ```
-    Script sẽ hỏi bạn thông tin database và cố gắng khởi tạo.
+**Yêu cầu trên EC2:**
+*   Một EC2 instance Ubuntu mới (ví dụ: t2.micro, t3.small).
+*   Security Group của EC2 **phải cho phép inbound traffic trên port 80 (HTTP)** từ `0.0.0.0/0`.
+*   Bạn có quyền `sudo` trên instance.
 
-## Cấu trúc thư mục
+**Các bước thực hiện trên EC2:**
 
-wedding_project/
-├── backend/
-│ ├── app/
-│ │ ├── init.py
-│ │ ├── main.py
-│ │ ├── models.py
-│ │ ├── schemas.py
-│ │ ├── crud.py
-│ │ └── database.py
-│ ├── .env_example
-│ └── requirements.txt
-├── frontend/
-│ ├── index.html
-│ ├── css/style.css
-│ └── js/script.js
-├── .gitignore
-├── README.md
-└── setup_and_run.sh
+1.  **SSH vào EC2 instance của bạn.**
 
+2.  **Cài đặt Git (nếu chưa có):**
+    ```bash
+    sudo apt update
+    sudo apt install -y git
+    ```
+
+3.  **Clone Repository:**
+    ```bash
+    git clone <your-updated-repository-url> wedding_project # Đảm bảo repo đã có các file mới nhất
+    cd wedding_project
+    ```
+
+4.  **Cấp quyền thực thi cho script:**
+    ```bash
+    chmod +x setup_and_run.sh
+    ```
+
+5.  **Chạy script với `sudo`:**
+    ```bash
+    sudo ./setup_and_run.sh
+   ```
+    *   Script sẽ cài đặt Python, PostgreSQL, Nginx, thiết lập database, môi trường Python, cấu hình Nginx, và khởi chạy backend.
+    *   Bạn có thể được hỏi về tên miền (để trống nếu muốn dùng IP public của EC2).
+
+6.  **Theo dõi output của script.** Nếu không có lỗi nghiêm trọng, script sẽ thông báo URL để truy cập trang web.
+
+7.  **Truy cập trang web** bằng IP public của EC2 hoặc domain bạn đã cấu hình.
+
+**Gỡ lỗi trên EC2:**
+*   **Log Nginx:** `/var/log/nginx/access.log` và `/var/log/nginx/error.log`
+*   **Log Uvicorn/Backend:** `backend/uvicorn.log` (trong thư mục dự án)
+*   **Trạng thái Nginx:** `sudo systemctl status nginx`
+*   **Trạng thái Uvicorn (PID):** `cat backend/uvicorn.pid` (trong thư mục dự án), rồi `ps -p <PID>`
 
 ## API Endpoints (Backend)
 

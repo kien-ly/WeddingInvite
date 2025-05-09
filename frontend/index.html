@@ -6,16 +6,27 @@
     <title>Trang mời cưới - Trung Kiên & Thanh Thảo</title>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Montserrat:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
-    <!-- Thêm icon thư viện nếu cần, ví dụ Font Awesome -->
-    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"> -->
+    <!-- Thêm Font Awesome cho icon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
+    <!-- Audio Player -->
+    <div class="audio-player">
+        <audio id="bgMusic" loop>
+            <source src="music/beauty-in-white.mp3" type="audio/mpeg">
+            Your browser does not support the audio element.
+        </audio>
+        <button id="musicToggle" class="music-toggle">
+            <i class="fas fa-music"></i>
+        </button>
+    </div>
+
     <div class="container">
         <!-- SECTION: HERO -->
         <section id="hero" class="section hero-section">
             <div class="hero-content">
                 <p class="hero-intro">Save The Date</p>
-                <h1 class="couple-names"> Trung Kiên <span class="ampersand">&</span> Thanh Thảo </h1>
+                <h1 class="couple-names">Trung Kiên <span class="ampersand">&</span> Thanh Thảo </h1>
                 <p class="wedding-date">20 tháng 07 năm 2025</p>
                 <div id="countdown" class="countdown-timer">
                     <div><span id="days">00</span> Ngày</div>
@@ -30,7 +41,7 @@
         <!-- SECTION: INVITATION MESSAGE -->
         <section id="invitation" class="section text-center">
             <h2>Trân trọng kính mời</h2>
-            <p>Quý vị đến tham dự buổi tiệc chung vui cùng gia đình chúng tôi nhân ngày thành hôn của hai con:</p>
+            <p>Quý vị đến tham dự buổi tiệc chung vui cùng gia đình chúng tôi nhân ngày thành hôn của:</p>
             <h3 class="highlight-names">Trung Kiên & Thanh Thảo</h3>
             <p>Sự hiện diện của quý vị là niềm vinh hạnh cho gia đình chúng tôi.</p>
         </section>
@@ -40,12 +51,12 @@
             <h2 class="section-title">Cô Dâu & Chú Rể</h2>
             <div class="couple-container">
                 <div class="person-info">
-                    <img src="images/placeholder_groom.jpg" alt="Ảnh Chú Rể" id="groomImage" class="person-image">
+                    <img src="images/groom.jpg" alt="Ảnh Chú Rể" id="groomImage" class="person-image">
                     <h3>Trung Kiên</h3>
                     <p>[Một vài dòng giới thiệu về chú rể. Ví dụ: Con trai trưởng của ông... và bà...]</p>
                 </div>
                 <div class="person-info">
-                    <img src="images/placeholder_bride.jpg" alt="Ảnh Cô Dâu" id="brideImage" class="person-image">
+                    <img src="images/bride.jpg" alt="Ảnh Cô Dâu" id="brideImage" class="person-image">
                     <h3>Thanh Thảo</h3>
                     <p>[Một vài dòng giới thiệu về cô dâu. Ví dụ: Con gái út của ông... và bà...]</p>
                 </div>
@@ -53,7 +64,7 @@
         </section>
 
         <!-- SECTION: OUR STORY (Ví dụ đơn giản) -->
-        <section id="story" class="section">
+        <!-- <section id="story" class="section">
             <h2 class="section-title">Chuyện Tình Yêu</h2>
             <div class="story-content">
                 <div class="story-item">
@@ -72,7 +83,7 @@
                     <img src="images/placeholder_story_3.jpg" alt="Ảnh kỷ niệm 3" class="story-image">
                 </div>
             </div>
-        </section>
+        </section> -->
 
         <!-- SECTION: EVENT DETAILS -->
         <section id="event" class="section">
@@ -80,17 +91,17 @@
             <div class="event-details-container">
                 <div class="event-item">
                     <h3>Lễ Thành Hôn</h3>
-                    <p><span class="icon"> cérémonie;</span> <strong>Thời gian:</strong> [Giờ] - [Ngày Tháng Năm]</p>
-                    <p><span class="icon"></span> <strong>Địa điểm:</strong> [Địa chỉ nhà trai/nhà gái hoặc nơi làm lễ]</p>
+                    <p><span class="icon"></span> <strong>Thời gian:</strong> [Giờ] - [Ngày Tháng Năm]</p>
+                    <p><span class="icon"></span> <strong>Địa điểm:</strong> [Địa chỉ nhà trai/nhà gái hoặc nơi làm lễ]</p>
                     <p>[Mô tả thêm nếu có]</p>
                     <!-- change link -->
-                    <a href="[Link Google Maps Lễ Thành Hôn]" target="_blank" class="map-link">Xem bản đồ</a>
+                    <a href="https://maps.app.goo.gl/3w4hwfn4GdbpjLbS6" target="_blank" class="map-link">Xem bản đồ</a>
                     <img src="images/placeholder_ceremony.jpg" alt="Ảnh Lễ Thành Hôn" class="event-image">
                 </div>
                 <div class="event-item">
                     <h3>Tiệc Cưới</h3>
-                    <p><span class="icon"></span> <strong>Thời gian:</strong> [Giờ] - [Ngày Tháng Năm]</p>
-                    <p><span class="icon"></span> <strong>Địa điểm:</strong> [Địa chỉ nhà hàng tiệc cưới]</p>
+                    <p><span class="icon"></span> <strong>Thời gian:</strong> [Giờ] - [Ngày Tháng Năm]</p>
+                    <p><span class="icon"></span> <strong>Địa điểm:</strong> [Địa chỉ nhà hàng tiệc cưới]</p>
                     <p>[Mô tả thêm nếu có]</p>
                     <a href="https://maps.app.goo.gl/k74R4a8UaYCURnBYA" target="_blank" class="map-link">Xem bản đồ</a>
                     <img src="images/placeholder_reception.jpg" alt="Ảnh Tiệc Cưới" class="event-image">
@@ -101,7 +112,7 @@
         <!-- SECTION: RSVP -->
         <section id="rsvp" class="section form-section">
             <h2 class="section-title">Xác Nhận Tham Dự</h2>
-            <p class="form-intro">Để chúng tôi có thể chuẩn bị chu đáo nhất, xin vui lòng xác nhận sự tham dự của bạn trước ngày [Ngày Hạn Chót RSVP].</p>
+            <p class="form-intro">Để chúng tôi có thể chuẩn bị chu đáo nhất, xin vui lòng xác nhận sự tham dự của bạn trước ngày 10 tháng 7 năm 2025.</p>
             <form id="rsvpForm">
                 <div class="form-group">
                     <label for="rsvpName">Tên của bạn:</label>
@@ -151,7 +162,7 @@
 
             <div class="wishes-display">
                 <h3>Những lời chúc tốt đẹp</h3>
-                <div id="wishesList">
+                <div id="wishesList" class="wishes-grid">
                     <!-- Lời chúc sẽ được tải vào đây -->
                 </div>
             </div>
@@ -161,21 +172,21 @@
         <section id="gallery" class="section">
             <h2 class="section-title">Khoảnh Khắc Đẹp</h2>
             <p class="text-center"><i>(Nơi đây sẽ trưng bày những hình ảnh cưới của chúng tôi. Hình ảnh sẽ được cập nhật sớm!)</i></p>
-            <div class="gallery-grid">
+            <!-- <div class="gallery-grid">
                 <img src="images/placeholder_gallery_1.jpg" alt="Ảnh cưới 1" class="gallery-image">
                 <img src="images/placeholder_gallery_2.jpg" alt="Ảnh cưới 2" class="gallery-image">
                 <img src="images/placeholder_gallery_3.jpg" alt="Ảnh cưới 3" class="gallery-image">
-                <img src="images/placeholder_gallery_4.jpg" alt="Ảnh cưới 4" class="gallery-image">
+                <img src="images/placeholder_gallery_4.jpg" alt="Ảnh cưới 4" class="gallery-image"> -->
                 <!-- Thêm nhiều placeholder ảnh khác nếu muốn -->
-            </div>
+            <!-- </div> -->
         </section>
 
         <footer>
             <p>Trân trọng cảm ơn!</p>
-            <p>© [Năm Hiện Tại] Trung Kiên & Thanh Thảo</p>
+            <p>© 2025 - Trung Kiên & Thanh Thảo</p>
         </footer>
     </div>
 
-    <script src="js/script.js"></script>
+    <script src="js/main.js"></script>
 </body>
 </html>

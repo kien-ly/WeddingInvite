@@ -1,219 +1,253 @@
-# Dự án Web Mời Cưới
+# Wedding Invitation Website
 
-Trang web mời cưới đơn giản với backend FastAPI (Python) và database PostgreSQL. Frontend được viết bằng HTML, CSS, và JavaScript. Backend được cấu hình để phục vụ cả API và các file tĩnh của frontend.
+A beautiful and responsive wedding invitation website built with Python (FastAPI) and modern web technologies.
 
-## Cấu trúc thư mục
+## Features
+
+- 🎵 Background music with play/pause control
+- 📅 Countdown timer to the wedding day
+- 💌 RSVP form for guest confirmation
+- 💝 Wish submission and display
+- 📱 Fully responsive design
+- 🎨 Elegant and romantic UI
+- 📍 Google Maps integration for venue locations
+
+## Tech Stack
+
+- **Backend**: Python 3.11, FastAPI, PostgreSQL
+- **Frontend**: HTML5, CSS3, JavaScript (Vanilla)
+- **Database**: PostgreSQL 15
+- **Deployment**: Nginx, Gunicorn
+
+## Project Structure
+
 ```
 wedding_project/
 ├── backend/
 │   ├── app/
-│   │   ├── __init__.py
-│   │   ├── main.py         # FastAPI app, routers, phục vụ frontend
-│   │   ├── models.py       # SQLAlchemy models
-│   │   ├── schemas.py      # Pydantic schemas
-│   │   ├── crud.py         # CRUD functions
-│   │   └── database.py     # Database setup
-│   ├── .env_example        # File mẫu biến môi trường
-│   └── requirements.txt    # Python dependencies
+│   │   ├── main.py
+│   │   ├── models.py
+│   │   └── database.py
+│   ├── requirements.txt
+│   └── .env
 ├── frontend/
 │   ├── index.html
-│   ├── css/style.css
-│   ├── js/script.js
-│   ├── images/             # Chứa hình ảnh của bạn
-│   └── (tùy chọn) favicon.ico
-├── .gitignore
-├── README.md
-└── setup_and_run.sh      # Script cài đặt và chạy trên EC2 Ubuntu
+│   ├── css/
+│   │   └── style.css
+│   ├── js/
+│   │   └── main.js
+│   ├── images/
+│   └── music/
+└── setup.sh
 ```
 
-## Chuẩn bị (Cho cả Local và EC2)
+## Setup Instructions
 
-1.  **Thay thế placeholder thông tin:**
-    *   Trong `frontend/index.html`: Thay thế tất cả `[Tên Chú Rể]`, `[Tên Cô Dâu]`, `[Ngày Tháng Năm]`, `[Địa Điểm]`, các link Google Maps, v.v.
-    *   Trong `frontend/js/script.js`: **QUAN TRỌNG:** Cập nhật biến `weddingDateTimeString` (gần đầu file và trong `DOMContentLoaded`) thành ngày giờ cưới thực tế của bạn (định dạng `YYYY-MM-DDTHH:MM:SS`).
-    *   Trong `frontend/images/`: Thay thế tất cả các ảnh `placeholder_*.jpg` bằng ảnh thật của bạn. Tham khảo mục "Hình Ảnh Cần Thay Thế" ở cuối README này.
+### 1. System Requirements
 
-2.  **(Chỉ cho EC2) Cập nhật `setup_and_run.sh`:**
-    *   Mở file `setup_and_run.sh`.
-    *   Thay thế `<your-git-repository-url-here>` bằng URL Git repo của bạn (nếu bạn dùng script để clone).
-    *   Xem xét và thay đổi `DB_PASS` thành một mật khẩu mạnh hơn.
+- Ubuntu 22.04 LTS
+- Python 3.11
+- PostgreSQL 15
+- Nginx
+- Git
 
-## Chạy Dự Án Trên Localhost (Ubuntu/Linux)
+### 2. Installation
 
-Cách này sẽ chạy toàn bộ trang web (frontend và backend) trên một port duy nhất từ máy local của bạn.
-
-**Yêu cầu trên Localhost:**
-*   Python 3.8+ và `pip`
-*   `python3-venv`
-*   PostgreSQL Server (đã cài đặt và đang chạy)
-*   `libpq-dev` (thư viện phát triển PostgreSQL): `sudo apt install libpq-dev`
-
-**Các bước thực hiện:**
-
-1.  **Clone Repository (Nếu chưa có):**
-    ```bash
-    git clone <your-repository-url> wedding_project
-    cd wedding_project
-    ```
-
-2.  **Thiết lập PostgreSQL (Nếu chưa làm):**
-    *   Truy cập psql: `sudo -u postgres psql`
-    *   Tạo user và database:
-        ```sql
-        CREATE USER wedding_user WITH PASSWORD 'your_local_db_password'; -- Đặt mật khẩu của bạn
-        CREATE DATABASE wedding_db OWNER wedding_user;
-        GRANT ALL PRIVILEGES ON DATABASE wedding_db TO wedding_user;
-        \q
-        ```
-
-3.  **Cấu hình Backend:**
-    *   Di chuyển vào thư mục backend: `cd backend`
-    *   Tạo và kích hoạt môi trường ảo:
-        ```bash
-        python3 -m venv venv
-        source venv/bin/activate
-        ```
-    *   Cài đặt thư viện Python:
-        ```bash
-        pip install -r requirements.txt
-        ```
-    *   Tạo file `.env` từ `.env_example`:
-        ```bash
-        cp .env_example .env
-        ```
-    *   Mở file `.env` và chỉnh sửa `DATABASE_URL`:
-        ```env
-        DATABASE_URL=postgresql+psycopg2://wedding_user:your_local_db_password@localhost:5432/wedding_db
-        ```
-        (Thay `your_local_db_password` bằng mật khẩu bạn đã tạo ở trên).
-
-4.  **Chạy Server FastAPI/Uvicorn:**
-    *   Vẫn đang ở trong thư mục `backend` và môi trường ảo đã được kích hoạt:
-        ```bash
-        uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-        ```
-        Server sẽ phục vụ cả API và frontend.
-
-5.  **Truy cập Trang Web:**
-    *   Mở trình duyệt và truy cập: `http://localhost:8000` hoặc `http://127.0.0.1:8000`
-    *   API docs (Swagger): `http://localhost:8000/docs`
-
-6.  **Dừng Server:** Nhấn `Ctrl+C` trong terminal đang chạy Uvicorn. Để thoát môi trường ảo: `deactivate`.
-
-## Triển Khai Lên EC2 Ubuntu (Sử dụng `setup_and_run.sh`)
-
-Script `setup_and_run.sh` được thiết kế để tự động hóa việc cài đặt trên một EC2 Ubuntu mới.
-
-**Yêu cầu trên EC2:**
-*   Một EC2 instance Ubuntu mới (ví dụ: t2.micro, t3.small).
-*   Security Group của EC2 **phải cho phép inbound traffic trên port 80 (HTTP)** từ `0.0.0.0/0`.
-*   Bạn có quyền `sudo` trên instance.
-
-**Các bước thực hiện trên EC2:**
-
-1.  **SSH vào EC2 instance của bạn.**
-
-2.  **Cài đặt Git (nếu chưa có):**
-    ```bash
-    sudo apt update
-    sudo apt install -y git
-    ```
-
-3.  **Clone Repository:**
-    ```bash
-    git clone <your-updated-repository-url> wedding_project # Đảm bảo repo đã có các file mới nhất
-    cd wedding_project
-    ```
-
-4.  **Cấp quyền thực thi cho script:**
-    ```bash
-    chmod +x setup_and_run.sh
-    ```
-
-5.  **Chạy script với `sudo`:**
-    ```bash
-    sudo ./setup_and_run.sh
+1. Clone the repository:
+   ```bash
+   git clone <repository-url>
+   cd wedding_project
    ```
-    *   Script sẽ cài đặt Python, PostgreSQL, Nginx, thiết lập database, môi trường Python, cấu hình Nginx, và khởi chạy backend.
-    *   Bạn có thể được hỏi về tên miền (để trống nếu muốn dùng IP public của EC2).
 
-6.  **Theo dõi output của script.** Nếu không có lỗi nghiêm trọng, script sẽ thông báo URL để truy cập trang web.
+2. Run the setup script:
+   ```bash
+   chmod +x setup.sh
+   ./setup.sh
+   ```
 
-7.  **Truy cập trang web** bằng IP public của EC2 hoặc domain bạn đã cấu hình.
+3. The script will:
+   - Install required system packages
+   - Set up Python virtual environment
+   - Install Python dependencies
+   - Configure PostgreSQL database
+   - Set up Nginx
+   - Configure systemd service
 
-**Gỡ lỗi trên EC2:**
-*   **Log Nginx:** `/var/log/nginx/access.log` và `/var/log/nginx/error.log`
-*   **Log Uvicorn/Backend:** `backend/uvicorn.log` (trong thư mục dự án)
-*   **Trạng thái Nginx:** `sudo systemctl status nginx`
-*   **Trạng thái Uvicorn (PID):** `cat backend/uvicorn.pid` (trong thư mục dự án), rồi `ps -p <PID>`
+### 3. Configuration
 
-## API Endpoints (Backend)
+1. Create `.env` file in the backend directory:
+   ```
+   DATABASE_URL=postgresql://wedding_user:your_password@localhost/wedding_db
+   ```
 
-*   `POST /api/wishes/`: Tạo lời chúc mới.
-*   `GET /api/wishes/`: Lấy danh sách tất cả lời chúc.
-*   `POST /api/confirmations/`: Tạo xác nhận tham dự mới.
-*   `GET /api/confirmations/`: Lấy danh sách tất cả xác nhận (cân nhắc bảo mật).
-*   `GET /api/docs`: Giao diện Swagger UI để test API.
-*   `GET /api/redoc`: Giao diện ReDoc để xem tài liệu API.
+2. Update Nginx configuration if needed:
+   ```bash
+   sudo nano /etc/nginx/sites-available/wedding
+   ```
 
-## Góp ý và Phát triển thêm
+3. Update systemd service if needed:
+   ```bash
+   sudo nano /etc/systemd/system/wedding.service
+   ```
 
-*   Cải thiện giao diện người dùng (CSS, layout).
-*   Thêm xác thực cho các endpoint nhạy cảm (ví dụ: xem danh sách confirm).
-*   Sử dụng Alembic để quản lý database migrations.
-*   Triển khai dự án lên một server (ví dụ: Heroku, Docker, VPS).
-*   Thêm các tính năng khác như album ảnh, câu chuyện tình yêu, bản đồ...
+### 4. Database Management
 
+#### Check Database Status
 
+1. Check if PostgreSQL is running:
+   ```bash
+   sudo systemctl status postgresql
+   ```
 
-## Hình Ảnh Cần Thay Thế
+2. List all databases:
+   ```bash
+   sudo -u postgres psql -l
+   ```
 
-Để trang web hiển thị đúng và đẹp mắt, bạn cần chuẩn bị và thay thế các hình ảnh placeholder sau đây. Các hình ảnh này nằm trong thư mục `frontend/images/`.
+3. Connect to the wedding database:
+   ```bash
+   sudo -u postgres psql -d wedding_db
+   ```
 
-1.  **Ảnh Nền Hero Section:**
-    *   Tên file trong code: `../images/placeholder_hero_bg.jpg` (trong `style.css`)
-    *   Mục đích: Ảnh nền lớn, ấn tượng cho phần mở đầu trang.
-    *   Gợi ý: Ảnh cặp đôi, ảnh phong cảnh lãng mạn. Kích thước lớn, tỷ lệ ngang (ví dụ: 1920x1080px).
+#### View and Manage Data
 
-2.  **Ảnh Chú Rể:**
-    *   Tên file trong code: `images/placeholder_groom.jpg` (trong `index.html`)
-    *   Mục đích: Ảnh chân dung hoặc bán thân của chú rể.
-    *   Gợi ý: Ảnh vuông hoặc gần vuông (ví dụ: 400x400px).
+1. List all tables:
+   ```sql
+   \dt
+   ```
 
-3.  **Ảnh Cô Dâu:**
-    *   Tên file trong code: `images/placeholder_bride.jpg` (trong `index.html`)
-    *   Mục đích: Ảnh chân dung hoặc bán thân của cô dâu.
-    *   Gợi ý: Ảnh vuông hoặc gần vuông (ví dụ: 400x400px).
+2. View table structure:
+   ```sql
+   \d wishes
+   \d confirmations
+   ```
 
-4.  **Ảnh Câu Chuyện Tình Yêu (Ví dụ 3 ảnh):**
-    *   Tên file trong code:
-        *   `images/placeholder_story_1.jpg`
-        *   `images/placeholder_story_2.jpg`
-        *   `images/placeholder_story_3.jpg`
-    *   Mục đích: Hình ảnh minh họa cho các mốc kỷ niệm trong câu chuyện tình yêu.
-    *   Gợi ý: Kích thước vừa phải, có thể là ảnh ngang hoặc vuông (ví dụ: 600x400px hoặc 500x500px).
+3. View data in tables:
+   ```sql
+   SELECT * FROM wishes;
+   SELECT * FROM confirmations;
+   ```
 
-5.  **Ảnh Lễ Thành Hôn (Event):**
-    *   Tên file trong code: `images/placeholder_ceremony.jpg`
-    *   Mục đích: Hình ảnh minh họa cho địa điểm hoặc không khí lễ thành hôn.
-    *   Gợi ý: Ảnh ngang, (ví dụ: 400x250px).
+4. Delete all data from tables:
+   ```sql
+   DELETE FROM wishes;
+   DELETE FROM confirmations;
+   ```
 
-6.  **Ảnh Tiệc Cưới (Event):**
-    *   Tên file trong code: `images/placeholder_reception.jpg`
-    *   Mục đích: Hình ảnh minh họa cho địa điểm hoặc không khí tiệc cưới.
-    *   Gợi ý: Ảnh ngang, (ví dụ: 400x250px).
+5. Check database users:
+   ```sql
+   \du
+   ```
 
-7.  **Ảnh Album Cưới (Gallery - Ví dụ 4 ảnh):**
-    *   Tên file trong code:
-        *   `images/placeholder_gallery_1.jpg`
-        *   `images/placeholder_gallery_2.jpg`
-        *   `images/placeholder_gallery_3.jpg`
-        *   `images/placeholder_gallery_4.jpg`
-        *   (Bạn có thể thêm nhiều ảnh hơn)
-    *   Mục đích: Các ảnh đẹp trong album cưới.
-    *   Gợi ý: Nhiều kích thước và tỷ lệ khác nhau, grid sẽ tự sắp xếp.
+6. Check connection info:
+   ```sql
+   \conninfo
+   ```
 
-**Lưu ý:**
-*   Hãy tối ưu hóa kích thước file ảnh để trang web tải nhanh hơn.
-*   Tên file không nhất thiết phải giữ nguyên là "placeholder...", bạn có thể đặt tên file theo ý muốn và cập nhật đường dẫn trong file HTML hoặc CSS tương ứng.
-*   Đây chỉ là gợi ý, bạn có thể điều chỉnh số lượng hoặc loại bỏ bớt các mục ảnh không cần thiết.
+### 5. Running the Application
+
+1. Start the application:
+   ```bash
+   sudo systemctl start wedding
+   ```
+
+2. Check status:
+   ```bash
+   sudo systemctl status wedding
+   ```
+
+3. View logs:
+   ```bash
+   sudo journalctl -u wedding -f
+   ```
+
+### 6. Maintenance
+
+1. Update the application:
+   ```bash
+   git pull
+   sudo systemctl restart wedding
+   ```
+
+2. Backup database:
+   ```bash
+   sudo -u postgres pg_dump wedding_db > backup.sql
+   ```
+
+3. Restore database:
+   ```bash
+   sudo -u postgres psql wedding_db < backup.sql
+   ```
+
+## Development
+
+### Local Development
+
+1. Create virtual environment:
+   ```bash
+   python -m venv venv
+   source venv/bin/activate
+   ```
+
+2. Install dependencies:
+   ```bash
+   pip install -r backend/requirements.txt
+   ```
+
+3. Run development server:
+   ```bash
+   uvicorn backend.app.main:app --reload
+   ```
+
+### Adding New Features
+
+1. Backend changes:
+   - Add new models in `models.py`
+   - Create new endpoints in `main.py`
+   - Update database schema if needed
+
+2. Frontend changes:
+   - Add new HTML elements in `index.html`
+   - Style new elements in `style.css`
+   - Add JavaScript functionality in `main.js`
+
+## Troubleshooting
+
+### Common Issues
+
+1. Database Connection Issues:
+   - Check PostgreSQL service status
+   - Verify database credentials in `.env`
+   - Check database user permissions
+
+2. Application Not Starting:
+   - Check systemd service status
+   - View application logs
+   - Verify Python environment
+
+3. Nginx Issues:
+   - Check Nginx error logs
+   - Verify Nginx configuration
+   - Check file permissions
+
+### Logs Location
+
+- Application logs: `sudo journalctl -u wedding -f`
+- Nginx logs: `/var/log/nginx/error.log`
+- PostgreSQL logs: `/var/log/postgresql/postgresql-15-main.log`
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Contact
+
+For any questions or support, please contact [your-email@example.com]

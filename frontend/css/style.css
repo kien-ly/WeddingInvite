@@ -7,12 +7,15 @@ body, html {
     background-color: #fdfaf6; /* Màu nền tổng thể nhẹ nhàng */
     line-height: 1.7;
     scroll-behavior: smooth; /* Cuộn mượt khi click link section */
+    overflow-x: hidden; /* Prevent horizontal scroll on mobile */
 }
 
 .container {
     max-width: 1200px; /* Giới hạn chiều rộng nội dung chính */
     margin: 0 auto;
     padding: 0 15px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .section {
@@ -61,20 +64,21 @@ a:hover {
 
 /* Hero Section */
 .hero-section {
-    background-image: url('../images/placeholder_hero_bg.jpg'); /* THAY THẾ BẰNG ẢNH NỀN CỦA BẠN */
+    background-image: url('../images/hero_bg.jpg');
     background-size: cover;
     background-position: center center;
-    background-attachment: fixed; /* Hiệu ứng parallax đơn giản */
+    background-attachment: fixed;
     color: #fff;
-    height: 100vh; /* Chiều cao toàn màn hình */
+    height: 100vh;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     text-align: center;
     padding: 20px;
-    position: relative; /* Để lớp phủ hoạt động */
+    position: relative;
 }
+
 /* Lớp phủ mờ cho hero section để chữ dễ đọc hơn */
 .hero-section::before {
     content: '';
@@ -83,32 +87,55 @@ a:hover {
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(0, 0, 0, 0.4); /* Màu đen mờ */
+    background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.7));
     z-index: 1;
 }
+
 .hero-content {
-    position: relative; /* Để nội dung nằm trên lớp phủ */
+    position: relative;
     z-index: 2;
+    width: 100%;
+    max-width: 100%;
+    padding: 0 15px;
+    box-sizing: border-box;
 }
+
 .hero-intro {
-    font-size: 1.5em;
+    font-size: clamp(1.2em, 4vw, 1.5em);
     letter-spacing: 2px;
     text-transform: uppercase;
     margin-bottom: 10px;
+    white-space: nowrap;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    font-weight: 600;
 }
+
 .couple-names {
-    font-size: 4em; /* Điều chỉnh kích thước nếu cần */
-    font-weight: 700;
+    font-size: clamp(2em, 8vw, 4em);
+    font-weight: 800;
     margin: 10px 0;
     line-height: 1.2;
+    color: #ffd700; /* Màu vàng sáng hơn */
+    white-space: nowrap;
+    text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.6);
+    letter-spacing: 1px;
 }
+
 .ampersand {
     font-size: 0.8em;
     font-style: italic;
+    margin: 0 0.2em;
+    color: #fff;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
+
 .wedding-date {
-    font-size: 1.8em;
+    font-size: clamp(1.1em, 4vw, 1.8em);
     margin-top: 10px;
+    white-space: nowrap;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    font-weight: 600;
+    color: #fff;
 }
 
 /* Countdown Timer */
@@ -118,18 +145,23 @@ a:hover {
     margin-top: 30px;
     font-size: 1.2em;
 }
+
 .countdown-timer div {
     margin: 0 15px;
     text-align: center;
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: rgba(0, 0, 0, 0.4);
     padding: 10px 15px;
     border-radius: 5px;
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
+
 .countdown-timer span {
     display: block;
     font-size: 2.5em;
     font-weight: bold;
     color: #fff;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 /* Invitation Section */
@@ -335,40 +367,204 @@ form {
 
 /* Wishes Display */
 .wishes-display {
-    margin-top: 50px;
+    margin-top: 60px;
     text-align: center;
+    padding: 40px 20px;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
 }
+
 .wishes-display h3 {
-    font-size: 1.8em;
+    font-size: 2.2em;
     color: #8B4513;
-    margin-bottom: 30px;
+    margin-bottom: 40px;
+    position: relative;
+    font-family: 'Playfair Display', serif;
+    text-transform: uppercase;
+    letter-spacing: 2px;
 }
-#wishesList {
-    max-width: 700px;
+
+.wishes-display h3::before,
+.wishes-display h3::after {
+    content: '❀';
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #c8a079;
+    font-size: 0.8em;
+    opacity: 0.8;
+}
+
+.wishes-display h3::before {
+    left: 25%;
+    margin-right: 15px;
+}
+
+.wishes-display h3::after {
+    right: 25%;
+    margin-left: 15px;
+}
+
+.wishes-display h3::after {
+    content: '';
+    display: block;
+    width: 80px;
+    height: 2px;
+    background: linear-gradient(to right, transparent, #c8a079, transparent);
+    margin: 15px auto 0;
+}
+
+.wishes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 30px;
+    padding: 20px;
+    max-width: 1200px;
     margin: 0 auto;
 }
+
 .wish-item {
     background-color: #fff;
-    border: 1px solid #eee;
-    padding: 15px 20px;
-    margin-bottom: 15px;
-    border-radius: 8px;
+    border: 1px solid #e0d0b0;
+    padding: 25px;
+    border-radius: 15px;
     text-align: left;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    box-shadow: 0 3px 15px rgba(0,0,0,0.05);
+    transition: all 0.4s ease;
+    position: relative;
+    overflow: hidden;
 }
+
+.wish-item:hover {
+    transform: translateY(-8px) rotate(1deg);
+    box-shadow: 0 8px 25px rgba(139, 69, 19, 0.15);
+    border-color: #c8a079;
+}
+
+.wish-item::before {
+    content: '"';
+    position: absolute;
+    top: 5px;
+    left: 10px;
+    font-size: 5em;
+    color: rgba(139, 69, 19, 0.08);
+    font-family: 'Playfair Display', serif;
+    line-height: 1;
+    transform: rotate(-10deg);
+}
+
 .wish-item strong {
     color: #5a3e36;
     font-family: 'Playfair Display', serif;
+    font-size: 1.3em;
+    display: block;
+    margin-bottom: 15px;
+    position: relative;
+    padding-left: 15px;
 }
+
+.wish-item strong::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 20px;
+    background-color: #c8a079;
+    border-radius: 2px;
+}
+
 .wish-item p {
     margin: 5px 0;
+    color: #666;
+    line-height: 1.8;
+    position: relative;
+    z-index: 1;
+    font-size: 1.05em;
+    padding: 0 10px;
 }
+
 .wish-item small {
     display: block;
     text-align: right;
     font-size: 0.9em;
     color: #888;
-    margin-top: 10px;
+    margin-top: 20px;
+    font-style: italic;
+    padding-right: 10px;
+    position: relative;
+}
+
+.wish-item small::before {
+    content: '~';
+    margin-right: 5px;
+    color: #c8a079;
+}
+
+/* Error message styling */
+.error-message {
+    color: #dc3545;
+    text-align: center;
+    padding: 20px;
+    background-color: rgba(220, 53, 69, 0.1);
+    border-radius: 8px;
+    margin: 20px auto;
+    max-width: 600px;
+}
+
+/* Mobile Responsive for Wishes */
+@media (max-width: 768px) {
+    .wishes-display {
+        margin-top: 40px;
+        padding: 30px 15px;
+    }
+
+    .wishes-display h3 {
+        font-size: 1.8em;
+        margin-bottom: 30px;
+    }
+
+    .wishes-display h3::before {
+        left: 15%;
+    }
+
+    .wishes-display h3::after {
+        right: 15%;
+    }
+
+    .wishes-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+        padding: 10px;
+    }
+
+    .wish-item {
+        padding: 20px;
+    }
+
+    .wish-item strong {
+        font-size: 1.2em;
+    }
+
+    .wish-item p {
+        font-size: 1em;
+    }
+}
+
+@media (max-width: 480px) {
+    .wishes-display h3 {
+        font-size: 1.5em;
+    }
+
+    .wishes-display h3::before,
+    .wishes-display h3::after {
+        display: none;
+    }
+
+    .wish-item {
+        padding: 15px;
+    }
 }
 
 /* Gallery Section */
@@ -402,82 +598,276 @@ footer p {
     margin: 5px 0;
 }
 
-/* Responsive Adjustments */
+/* Audio Player Styles */
+.audio-player {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+}
+
+.music-toggle {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: rgba(139, 69, 19, 0.8);
+    border: 2px solid #fff;
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.music-toggle:hover {
+    background-color: rgba(139, 69, 19, 1);
+    transform: scale(1.1);
+}
+
+.music-toggle i {
+    font-size: 1.5em;
+}
+
+.music-toggle.playing {
+    animation: rotate 3s linear infinite;
+}
+
+@keyframes rotate {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Mobile Responsive for Audio Player */
 @media (max-width: 768px) {
+    .section {
+        padding: 40px 15px; /* Giảm padding cho mobile */
+    }
+
     .section-title {
-        font-size: 2.2em;
+        font-size: 2em;
+        margin-bottom: 30px;
     }
+
+    .hero-content {
+        padding: 0 10px;
+    }
+
+    .hero-intro {
+        font-size: clamp(1.1em, 3.5vw, 1.3em);
+    }
+
     .couple-names {
-        font-size: 2.8em;
+        font-size: clamp(1.8em, 7vw, 2.2em);
     }
+
     .wedding-date {
-        font-size: 1.5em;
+        font-size: clamp(1em, 3.5vw, 1.3em);
     }
+
     .countdown-timer {
-        flex-direction: column;
-        align-items: center;
+        flex-direction: row; /* Giữ layout ngang cho countdown */
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
     }
+
     .countdown-timer div {
-        margin: 10px 0;
-        font-size: 1em; /* Giảm kích thước chữ cho mobile */
+        margin: 5px;
+        padding: 8px 12px;
+        min-width: 70px;
     }
+
     .countdown-timer span {
-        font-size: 2em; /* Giảm kích thước số cho mobile */
+        font-size: 1.8em;
     }
 
     .couple-container {
         flex-direction: column;
         align-items: center;
+        gap: 40px;
     }
+
     .person-info {
-        margin-bottom: 30px;
+        margin-bottom: 20px;
+        padding: 0 15px;
+    }
+
+    .person-image {
+        width: 180px;
+        height: 180px;
     }
 
     .event-details-container {
         flex-direction: column;
+        gap: 20px;
     }
+
     .event-item {
         flex-basis: 100%;
         max-width: 100%;
-        margin-bottom: 20px;
+        margin: 0;
+        padding: 20px;
+    }
+
+    .event-image {
+        max-width: 100%;
+        margin-top: 15px;
     }
 
     form {
-        padding: 20px;
+        padding: 20px 15px;
+        margin: 0 10px;
     }
-    .gallery-grid {
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    }
-}
 
-@media (max-width: 480px) {
-    .section-title {
-        font-size: 1.8em;
+    .form-group {
+        margin-bottom: 15px;
     }
-    .hero-intro {
-        font-size: 1.2em;
-    }
-    .couple-names {
-        font-size: 2em;
-    }
-    .wedding-date {
-        font-size: 1.2em;
-    }
-    .countdown-timer span {
-        font-size: 1.8em;
-    }
+
     .form-group input[type="text"],
     .form-group input[type="number"],
     .form-group textarea {
         padding: 10px;
-        font-size: 0.95em;
+        font-size: 16px; /* Prevent zoom on iOS */
     }
+
+    .radio-group {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .radio-group label {
+        margin-right: 0;
+    }
+
     .submit-button {
+        padding: 12px 20px;
         font-size: 1em;
-        padding: 10px 15px;
     }
+
+    .gallery-grid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 10px;
+    }
+
+    .audio-player {
+        bottom: 15px;
+        right: 15px;
+    }
+
+    .music-toggle {
+        width: 40px;
+        height: 40px;
+    }
+
+    .music-toggle i {
+        font-size: 1.2em;
+    }
+}
+
+@media (max-width: 480px) {
+    .section {
+        padding: 30px 10px;
+    }
+
+    .section-title {
+        font-size: 1.8em;
+        margin-bottom: 25px;
+    }
+
+    .hero-content {
+        padding: 0 5px;
+    }
+
+    .hero-intro {
+        font-size: clamp(1em, 3vw, 1.1em);
+    }
+
+    .couple-names {
+        font-size: clamp(1.5em, 6vw, 1.8em);
+    }
+
+    .wedding-date {
+        font-size: clamp(0.9em, 3vw, 1.1em);
+    }
+
+    .countdown-timer div {
+        min-width: 60px;
+        padding: 6px 10px;
+    }
+
+    .countdown-timer span {
+        font-size: 1.5em;
+    }
+
     .person-image {
         width: 150px;
         height: 150px;
     }
+
+    .event-item {
+        padding: 15px;
+    }
+
+    .event-item h3 {
+        font-size: 1.4em;
+    }
+
+    .map-link {
+        padding: 8px 15px;
+        font-size: 0.9em;
+    }
+
+    .form-intro {
+        font-size: 1em;
+        padding: 0 10px;
+    }
+
+    .wish-item {
+        padding: 12px 15px;
+    }
+
+    .wish-item strong {
+        font-size: 1.1em;
+    }
+
+    .wish-item small {
+        font-size: 0.8em;
+    }
+}
+
+/* Fix for very small screens */
+@media (max-width: 320px) {
+    .hero-intro {
+        font-size: clamp(0.9em, 2.5vw, 1em);
+    }
+
+    .couple-names {
+        font-size: clamp(1.3em, 5vw, 1.5em);
+    }
+
+    .wedding-date {
+        font-size: clamp(0.8em, 2.5vw, 0.9em);
+    }
+
+    .countdown-timer div {
+        min-width: 50px;
+        padding: 5px 8px;
+    }
+
+    .countdown-timer span {
+        font-size: 1.3em;
+    }
+
+    .person-image {
+        width: 130px;
+        height: 130px;
+    }
+}
 }

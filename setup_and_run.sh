@@ -8,7 +8,7 @@ GIT_REPO_URL="<your-git-repository-url-here>" # !!! REPLACE THIS !!!
 PROJECT_DIR_NAME_IN_HOME="wedding_project" # Name of the project directory in /home/ubuntu
 
 DB_USER="wedding_user"
-DB_PASS="pw" # !!! CHANGE THIS IN PRODUCTION !!!
+DB_PASS="wedding_password" # !!! CHANGE THIS IN PRODUCTION !!!
 DB_NAME="wedding_db"
 DB_HOST="localhost"
 DB_PORT="5432"
@@ -304,3 +304,31 @@ print_info "-------------------------------------------------------------------"
 print_info "Uvicorn PID: $UVICORN_PID_FILE, Log: $UVICORN_LOG_FILE"
 print_info "To stop Uvicorn: kill \$(cat $UVICORN_PID_FILE 2>/dev/null || echo 0)"
 print_info "-------------------------------------------------------------------"
+
+# 8. Create systemd service
+echo "Creating systemd service..."
+sudo tee /etc/systemd/system/wedding.service << EOL
+[Unit]
+Description=Wedding Application
+After=network.target
+
+[Service]
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/home/ubuntu/wedding_project
+Environment="PATH=/home/ubuntu/wedding_project/venv/bin"
+ExecStart=/home/ubuntu/wedding_project/venv/bin/uvicorn backend.app.main:app --host 0.0.0.0 --port 8000
+
+[Install]
+WantedBy=multi-user.target
+EOL
+
+# 9. Start the application
+echo "Starting the application..."
+sudo systemctl daemon-reload
+sudo systemctl start wedding
+sudo systemctl enable wedding
+
+echo "Setup completed! The application should be running at http://your-ec2-ip"
+echo "To check the status, run: sudo systemctl status wedding"
+echo "To view logs, run: sudo journalctl -u wedding -f"

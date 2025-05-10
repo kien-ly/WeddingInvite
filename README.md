@@ -128,11 +128,24 @@ wedding_project/
    SELECT * FROM confirmations;
    ```
 
-4. Delete all data from tables:
-   ```sql
-   DELETE FROM wishes;
-   DELETE FROM confirmations;
-   ```
+4. Xóa một vài dòng trong bảng (Delete specific rows):
+   - Trước khi xóa, nên kiểm tra dữ liệu bằng lệnh SELECT với điều kiện tương ứng:
+     ```sql
+     SELECT * FROM "wishes" ;
+     ```
+   - Xóa một dòng theo id:
+     ```sql
+     DELETE FROM wishes WHERE id = 5;
+     ```
+   - Xóa nhiều dòng theo điều kiện:
+     ```sql
+     DELETE FROM wishes WHERE id BETWEEN 10 AND 20;
+     DELETE FROM wishes WHERE name = 'test';
+     ```
+   - Sau khi xóa, kiểm tra lại dữ liệu:
+     ```sql
+     SELECT * FROM wishes;
+     ```
 
 5. Check database users:
    ```sql
@@ -250,4 +263,5 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Contact
 
-For any questions or support, please contact [your-email@example.com]
+For any questions or support, please contact kienly.work@gmail.com
+

@@ -1,6 +1,5 @@
 // Constants
 const API_BASE_URL = '/api';
-const WEDDING_DATE = '2025-07-20T18:00:00';
 
 // Utility Functions
 function escapeHtml(unsafe) {
@@ -14,29 +13,38 @@ function escapeHtml(unsafe) {
 }
 
 // Countdown Timer
-function updateCountdown() {
-    const now = new Date().getTime();
-    const distance = new Date(WEDDING_DATE).getTime() - now;
+function setupCountdown(targetDateString, daysId, hoursId, minutesId, secondsId) {
+    const targetDate = new Date(targetDateString).getTime();
+    console.log(`Setting up countdown for: ${targetDateString}`);
+    console.log(`Target Date (milliseconds): ${targetDate}`);
 
-    if (distance < 0) {
-        clearInterval(countdownInterval);
-        ['days', 'hours', 'minutes', 'seconds'].forEach(id => {
-            document.getElementById(id).textContent = '00';
-        });
-        const heroIntro = document.querySelector('.hero-intro');
-        if (heroIntro) heroIntro.textContent = 'Chúc Mừng Hạnh Phúc!';
-        return;
-    }
+    const update = () => {
+        const now = new Date().getTime();
+        const distance = targetDate - now;
+        console.log(`Current time (milliseconds): ${now}`);
+        console.log(`Distance: ${distance}`);
 
-    const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+        if (distance < 0) {
+            document.getElementById(daysId).textContent = '00';
+            document.getElementById(hoursId).textContent = '00';
+            document.getElementById(minutesId).textContent = '00';
+            document.getElementById(secondsId).textContent = '00';
+            return;
+        }
 
-    document.getElementById('days').textContent = String(days).padStart(2, '0');
-    document.getElementById('hours').textContent = String(hours).padStart(2, '0');
-    document.getElementById('minutes').textContent = String(minutes).padStart(2, '0');
-    document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
+        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+        document.getElementById(daysId).textContent = String(days).padStart(2, '0');
+        document.getElementById(hoursId).textContent = String(hours).padStart(2, '0');
+        document.getElementById(minutesId).textContent = String(minutes).padStart(2, '0');
+        document.getElementById(secondsId).textContent = String(seconds).padStart(2, '0');
+    };
+
+    update(); // Initial call
+    setInterval(update, 1000);
 }
 
 // Wishes Management
@@ -168,11 +176,89 @@ function initAudioPlayer() {
     });
 }
 
+// Gallery Carousel Logic (3 ảnh, hiệu ứng slide mượt)
+(function() {
+    const images = [
+        'images/t1-min.jpg',
+        'images/t2-min.jpg',
+        'images/t3-min.jpg',
+        'images/t4-min.jpg',
+        'images/t5-min.jpg',
+        'images/t6-min.jpg',
+        'images/t7-min.jpg',
+        'images/t8-min.jpg',
+        'images/t9-min.jpg'
+    ];
+    let current = 0;
+    const leftEl = document.getElementById('galleryLeft');
+    const centerEl = document.getElementById('galleryCenter');
+    const rightEl = document.getElementById('galleryRight');
+    const prevBtn = document.getElementById('galleryPrev');
+    const nextBtn = document.getElementById('galleryNext');
+    const track = document.querySelector('.gallery-track');
+    function updateImages(idx) {
+        const leftIdx = (idx - 1 + images.length) % images.length;
+        const rightIdx = (idx + 1) % images.length;
+        leftEl.src = images[leftIdx];
+        leftEl.alt = `Khoảnh khắc đẹp ${leftIdx+1}`;
+        centerEl.src = images[idx];
+        centerEl.alt = `Khoảnh khắc đẹp ${idx+1}`;
+        rightEl.src = images[rightIdx];
+        rightEl.alt = `Khoảnh khắc đẹp ${rightIdx+1}`;
+    }
+    function slideTo(idx, dir) {
+        if (!track) return;
+        // Thêm class slide
+        track.classList.add('slide-' + dir);
+        setTimeout(() => {
+            track.classList.remove('slide-' + dir);
+            current = (idx + images.length) % images.length;
+            updateImages(current);
+        }, 450); // khớp với transition CSS
+    }
+    if (leftEl && centerEl && rightEl && prevBtn && nextBtn) {
+        prevBtn.addEventListener('click', function() {
+            slideTo(current - 1, 'right');
+        });
+        nextBtn.addEventListener('click', function() {
+            slideTo(current + 1, 'left');
+        });
+    }
+    // Swipe support for mobile
+    if (track) {
+        let startX = 0;
+        let isTouch = false;
+        track.addEventListener('touchstart', function(e) {
+            if (e.touches.length === 1) {
+                startX = e.touches[0].clientX;
+                isTouch = true;
+            }
+        });
+        track.addEventListener('touchmove', function(e) {
+            if (isTouch) e.preventDefault();
+        }, { passive: false });
+        track.addEventListener('touchend', function(e) {
+            if (!isTouch) return;
+            const endX = e.changedTouches[0].clientX;
+            const dx = endX - startX;
+            if (Math.abs(dx) > 40) {
+                if (dx < 0) {
+                    slideTo(current + 1, 'left'); // swipe left
+                } else {
+                    slideTo(current - 1, 'right'); // swipe right
+                }
+            }
+            isTouch = false;
+        });
+    }
+    updateImages(current);
+})();
+
 // Initialize everything when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    // Start countdown
-    updateCountdown();
-    const countdownInterval = setInterval(updateCountdown, 1000);
+    // Setup countdowns
+    setupCountdown('2025-07-19T18:00:00', 'days-vuquy', 'hours-vuquy', 'minutes-vuquy', 'seconds-vuquy');
+    setupCountdown('2025-07-20T18:00:00', 'days-tanhon', 'hours-tanhon', 'minutes-tanhon', 'seconds-tanhon');
 
     // Initialize forms
     const rsvpForm = document.getElementById('rsvpForm');
